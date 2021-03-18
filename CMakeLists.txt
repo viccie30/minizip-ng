@@ -24,14 +24,17 @@ option(MZ_BUILD_TEST "Builds minizip test executable" OFF)
 option(MZ_BUILD_UNIT_TEST "Builds minizip unit test project" OFF)
 option(MZ_BUILD_FUZZ_TEST "Builds minizip fuzzer executables" OFF)
 
-# MZ_ZLIB_ROOT - Parent directory of zlib installation
-# MZ_BZIP2_ROOT - Parent directory of BZip2 installation
-# MZ_OPENSSL_ROOT - Parent directory of OpenSSL installation
+if(POLICY CMP0074)
+    cmake_policy(SET CMP0074 OLD) 
+endif()
+# ZLIB_ROOT - Parent directory of zlib installation
+# BZIP2_ROOT - Parent directory of BZip2 installation
+# OPENSSL_ROOT - Parent directory of OpenSSL installation
 
-project("minizip" C)
+enable_language(C)
 
 # Minizip library version
-set(VERSION "2.8.3")
+set(VERSION "2.8.4")
 
 # Minizip api version
 set(SOVERSION "2.5")
@@ -56,11 +59,8 @@ if(EXISTS ${MINIZIP_PC}.cmakein)
     configure_file(${MINIZIP_PC}.cmakein ${MINIZIP_PC} @ONLY)
 endif()
 
-set(PROJECT_NAME minizip)
-
 # Check if zlib installation is present
 if(MZ_ZLIB AND NOT MZ_LIBCOMP)
-    set(ZLIB_ROOT ${MZ_ZLIB_ROOT} CACHE PATH "Parent directory of zlib installation")
     find_package(ZLIB)
     if(ZLIB_FOUND)
         message(STATUS "Using ZLIB ${ZLIB_VERSION_STRING}")
@@ -80,19 +80,8 @@ if(MZ_ZLIB AND NOT MZ_LIBCOMP)
         set(ZLIB_INCLUDE_DIRS ${ZLIB_INSTALL_DIR}/include)
 
         if(WIN32)
-            if(${CMAKE_GENERATOR} MATCHES "Visual Studio.*")
-                set(ZLIB_LIBRARIES
-                    debug ${ZLIB_INSTALL_DIR}/lib/zlibstaticd.lib
-                    optimized ${ZLIB_INSTALL_DIR}/lib/zlibstatic.lib)
-            else()
-                if(CMAKE_BUILD_TYPE EQUAL Debug)
-                    set(ZLIB_LIBRARIES
-                        ${ZLIB_INSTALL_DIR}/lib/zlibstaticd.lib)
-                else()
-                    set(ZLIB_LIBRARIES
-                        ${ZLIB_INSTALL_DIR}/lib/zlibstatic.lib)
-                endif()
-            endif()
+            set(ZLIB_LIBRARIES
+                ${ZLIB_INSTALL_DIR}/lib/zlibstatic$<$<CONFIG:Debug>:d>.lib)
         else()
             set(ZLIB_LIBRARIES
                 ${ZLIB_INSTALL_DIR}/lib/libz.a)
@@ -133,7 +122,6 @@ endif()
 
 # Check if bzip2 installation is present
 if(MZ_BZIP2)
-    set(BZIP2_ROOT ${MZ_BZIP2_ROOT} CACHE PATH "Parent directory of bzip2 installation")
     find_package(BZip2)
     if(BZIP2_FOUND)
         message(STATUS "Using BZIP2 ${BZIP2_VERSION_STRING}")
@@ -144,12 +132,71 @@ endif()
 
 # Check to see if openssl installation is present
 if (MZ_OPENSSL)
-    set(OPENSSL_ROOT ${MZ_OPENSSL_ROOT} CACHE PATH "Parent directory of openssl installation")
     find_package(OpenSSL)
     if (OPENSSL_FOUND)
         message(STATUS "Using OpenSSL ${OPENSSL_VERSION}")
         include_directories(${OPENSSL_INCLUDE_DIRS})
     endif()
+endif()
+
+# Check for system includes
+check_include_file(stdint.h   HAVE_STDINT_H)
+check_include_file(inttypes.h HAVE_INTTYPES_H)
+
+if(HAVE_STDINT_H)
+    add_definitions(-DHAVE_STDINT_H)
+endif()
+if(HAVE_INTTYPES_H)
+    add_definitions(-DHAVE_INTTYPES_H)
+endif()
+
+# Check for large file support
+check_type_size(off64_t OFF64_T)
+if(HAVE_OFF64_T)
+    add_definitions(-D__USE_FILE_OFFSET64)
+    add_definitions(-D__USE_LARGEFILE64)
+    add_definitions(-D_LARGEFILE64_SOURCE)
+    add_definitions(-D_FILE_OFFSET_BITS=64)
+endif()
+# Check for fseeko support
+check_function_exists(fseeko HAVE_FSEEKO)
+if(NOT HAVE_FSEEKO)
+    add_definitions(-DNO_FSEEKO)
+endif()
+
+# Enable compiler warnings
+if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
+    add_compile_options(/W3)
+else()
+    add_compile_options(-W -Wall)
+endif()
+# Enable x86 optimizations if supported
+if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+    include(CheckCCompilerFlag)
+
+    macro(enable_option_if_supported option variable)
+        check_c_compiler_flag(
+            "-Werror=unused-command-line-argument ${option}" ${variable})
+        if(${variable})
+            add_compile_options("$<$<CONFIG:Release>:${option}>")
+        endif()
+    endmacro()
+
+    enable_option_if_supported(-msse3 check_opt_sse3)
+    enable_option_if_supported(-msse4.1 check_opt_sse41)
+    enable_option_if_supported(-maes check_opt_aes)
+endif()
+# Set compiler options
+if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
+    add_compile_options(
+        $<$<CONFIG:Debug>:/Zi>
+        $<$<CONFIG:Debug>:/Od>
+        $<$<CONFIG:Release>:/Ox>
+        $<$<CONFIG:Release>:/Os>)
+else()
+    add_compile_options(
+        $<$<CONFIG:Debug>:-g>
+        $<$<CONFIG:Release>:-Os>)
 endif()
 
 # Initial source files
@@ -187,31 +234,6 @@ if(MZ_DECOMPRESS_ONLY)
 endif()
 if(NOT MZ_PKCRYPT AND NOT MZ_WZAES)
     add_definitions(-DMZ_ZIP_NO_ENCRYPTION)
-endif()
-
-# Check for system includes
-check_include_file(stdint.h   HAVE_STDINT_H)
-check_include_file(inttypes.h HAVE_INTTYPES_H)
-
-if(HAVE_STDINT_H)
-    add_definitions(-DHAVE_STDINT_H)
-endif()
-if(HAVE_INTTYPES_H)
-    add_definitions(-DHAVE_INTTYPES_H)
-endif()
-
-# Check for large file support
-check_type_size(off64_t OFF64_T)
-if(HAVE_OFF64_T)
-    add_definitions(-D__USE_FILE_OFFSET64)
-    add_definitions(-D__USE_LARGEFILE64)
-    add_definitions(-D_LARGEFILE64_SOURCE)
-    add_definitions(-D_FILE_OFFSET_BITS=64)
-endif()
-# Check for fseeko support
-check_function_exists(fseeko HAVE_FSEEKO)
-if(NOT HAVE_FSEEKO)
-    add_definitions(-DNO_FSEEKO)
 endif()
 
 # Windows specific
@@ -280,7 +302,6 @@ if(UNIX)
         message(STATUS "Using Iconv")
         include_directories(${Iconv_INCLUDE_DIRS})
     endif()
-
 endif()
 
 # Include compatibility layer
@@ -376,14 +397,6 @@ if(MZ_ZLIB)
 
         list(APPEND MINIZIP_SRC "mz_strm_zlib.c")
         list(APPEND MINIZIP_PUBLIC_HEADERS "mz_strm_zlib.h")
-        
-        if (ZLIB_FOUND)
-            include(CheckFunctionExists)
-            check_function_exists(z_get_crc_table NEEDS_Z_PREFIX)
-            if(NEEDS_Z_PREFIX)
-                add_definitions(-DZ_PREFIX)
-            endif()
-        endif()
     endif()
 endif()
 
@@ -551,43 +564,10 @@ if(MZ_LZMA)
     source_group("LZMA\\RangeCoder" FILES ${LZMA_RANGECODER_SRC} ${LZMA_RANGECODER_HEADERS})
 endif()
 
-# Enable x86 optimizations if supported
-if(CMAKE_BUILD_TYPE MATCHES Release)
-    if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-        include(CheckCCompilerFlag)
-
-        macro(enable_option_if_supported option variable)
-            check_c_compiler_flag("-Werror=unused-command-line-argument ${option}" ${variable})
-            if(${variable})
-                add_compile_options(${option})
-            endif()
-        endmacro()
-
-        enable_option_if_supported(-msse3 check_opt_sse3)
-        enable_option_if_supported(-msse4.1 check_opt_sse41)
-        enable_option_if_supported(-maes check_opt_aes)
-    endif()
-
-    if(NOT MSVC)
-        add_compile_options(-O3)
-    endif()
-else()
-    if(MSVC)
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Zi")
-    else()
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
-    endif()
-endif()
-
-# Enable compiler warnings
-if(MSVC)
-    add_compile_options(/W3)
-else()
-    add_compile_options(-W -Wall)
-endif()
-
 # Create minizip library
 source_group("Minizip" FILES ${MINIZIP_SRC} ${MINIZIP_PUBLIC_HEADERS})
+
+project(minizip)
 
 add_library(${PROJECT_NAME}
                 ${MINIZIP_SRC} ${MINIZIP_PUBLIC_HEADERS}
@@ -599,9 +579,9 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
                         VERSION ${VERSION} 
                         SOVERSION ${SOVERSION}
                         LINKER_LANGUAGE C
-                        PREFIX ""
                         DEFINE_SYMBOL "MZ_EXPORTS"
                         POSITION_INDEPENDENT_CODE 1)
+
 if(MZ_LZMA)
     set_target_properties(${PROJECT_NAME} PROPERTIES C_STANDARD 99)
 endif()
@@ -626,9 +606,12 @@ if(MZ_OPENSSL AND OPENSSL_FOUND)
     target_link_libraries(${PROJECT_NAME} ${OPENSSL_LIBRARIES})
 elseif(UNIX)
     if(APPLE AND NOT MZ_BRG)
+        message(STATUS "Using CoreFoundation Framework")
+        find_library(COREFOUNDATION_LIBRARY CoreFoundation)
+        target_link_libraries(${PROJECT_NAME} ${COREFOUNDATION_LIBRARY})
         message(STATUS "Using Security Framework")
-        target_link_libraries(${PROJECT_NAME} "-framework CoreFoundation")
-        target_link_libraries(${PROJECT_NAME} "-framework Security")
+        find_library(SECURITY_LIBRARY Security)
+        target_link_libraries(${PROJECT_NAME} ${SECURITY_LIBRARY})
         set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-Wl,-F/Library/Frameworks")
     else()
         target_link_libraries(${PROJECT_NAME} ${LIBBSD_LIBRARIES})
