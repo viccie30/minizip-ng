@@ -1,5 +1,5 @@
 /* mz_compat.c -- Backwards compatible interface for older versions
-   Version 2.3.9, July 26, 2018
+   Version 2.4.0, August 5, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -184,9 +184,6 @@ extern int ZEXPORT zipOpenNewFileInZip5(zipFile file, const char *filename, cons
     if ((password != NULL) || (raw && (file_info.flag & MZ_ZIP_FLAG_ENCRYPTED)))
         file_info.aes_version = MZ_AES_VERSION;
 #endif
-
-    if (raw)
-        level = 0;
 
     return mz_zip_entry_write_open(compat->handle, &file_info, (int16_t)level, password);
 }
@@ -500,13 +497,45 @@ extern int ZEXPORT unzGetGlobalComment(unzFile file, char *comment, uint16_t com
 extern int ZEXPORT unzOpenCurrentFile3(unzFile file, int *method, int *level, int raw, const char *password)
 {
     mz_compat *compat = (mz_compat *)file;
+    mz_zip_file *file_info = NULL;
+    int err = MZ_OK;
+
     if (compat == NULL)
         return UNZ_PARAMERROR;
     if (method != NULL)
         *method = 0;
     if (level != NULL)
         *level = 0;
-    return mz_zip_entry_read_open(compat->handle, (int16_t)raw, password);
+
+    err = mz_zip_entry_read_open(compat->handle, (int16_t)raw, password);
+    if (err == MZ_OK)
+        err = mz_zip_entry_get_info(compat->handle, &file_info);
+    if (err == MZ_OK)
+    {
+        if (method != NULL)
+        {
+            *method = file_info->compression_method;
+        }
+
+        if (level != NULL)
+        {
+            *level = 6;
+            switch (file_info->flag & 0x06)
+            {
+            case MZ_ZIP_FLAG_DEFLATE_SUPER_FAST: 
+                *level = 1;
+                break;
+            case MZ_ZIP_FLAG_DEFLATE_FAST:
+                *level = 2;
+                break;
+            case MZ_ZIP_FLAG_DEFLATE_MAX:
+                *level = 9;
+                break;
+            }
+        }
+    }
+
+    return err;
 }
 
 extern int ZEXPORT unzOpenCurrentFile(unzFile file)
