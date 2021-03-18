@@ -1,11 +1,9 @@
 /* mz.h -- Errors codes, zip flags and magic
-   Version 2.2.1, October 23rd, 2017
+   Version 2.2.2, October 26th, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
      https://github.com/nmoinvaz/minizip
-   Copyright (C) 1998-2010 Gilles Vollant
-     http://www.winimage.com/zLibDll/minizip.html
 
    This program is distributed under the terms of the same license as zlib.
    See the accompanying LICENSE file for the full text of the license.
@@ -21,7 +19,7 @@ extern "C" {
 /***************************************************************************/
 
 // MZ_VERSION
-#define MZ_VERSION                      ("2.2.1")
+#define MZ_VERSION                      ("2.2.2")
 
 // MZ_ERROR
 #define MZ_OK                           (0)
@@ -46,9 +44,9 @@ extern "C" {
 #define MZ_OPEN_MODE_EXISTING           (0x10)
 
 // MZ_SEEK
+#define MZ_SEEK_SET                     (0)
 #define MZ_SEEK_CUR                     (1)
 #define MZ_SEEK_END                     (2)
-#define MZ_SEEK_SET                     (0)
 
 // MZ_COMPRESS
 #define MZ_COMPRESS_METHOD_RAW          (0)
@@ -56,7 +54,10 @@ extern "C" {
 #define MZ_COMPRESS_METHOD_BZIP2        (12)
 #define MZ_COMPRESS_METHOD_LZMA         (14)
 #define MZ_COMPRESS_METHOD_AES          (99)
+
 #define MZ_COMPRESS_LEVEL_DEFAULT       (-1)
+#define MZ_COMPRESS_LEVEL_NORMAL        (6)
+#define MZ_COMPRESS_LEVEL_BEST          (9)
 
 // MZ_ZIP
 #define MZ_ZIP_FLAG_ENCRYPTED           (1 << 0)

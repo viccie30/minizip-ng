@@ -21,6 +21,9 @@
 #  include <unistd.h>
 #  include <utime.h>
 #endif
+#if defined unix
+#  include <bsd/stdlib.h>
+#endif
 
 #include "mz.h"
 #include "mz_strm.h"
@@ -33,6 +36,28 @@ int32_t mz_posix_rand(uint8_t *buf, int32_t size)
 {
     arc4random_buf(buf, size);
     return size;
+}
+
+int32_t mz_posix_file_exists(const char *path)
+{
+    struct stat stat_info;
+
+    memset(&stat_info, 0, sizeof(stat_info));
+    if (stat(path, &stat_info) == 0)
+        return MZ_OK;
+
+    return MZ_EXIST_ERROR;
+}
+
+int64_t mz_posix_get_file_size(const char *path)
+{
+    struct stat stat_info;
+
+    memset(&stat_info, 0, sizeof(stat_info));
+    if (stat(path, &stat_info) == 0)
+        return stat_info.st_size;
+
+    return 0;
 }
 
 int32_t mz_posix_get_file_date(const char *path, time_t *modified_date, time_t *accessed_date, time_t *creation_date)

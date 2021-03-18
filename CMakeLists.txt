@@ -18,15 +18,15 @@ if(NOT DEFINED CMAKE_MACOSX_RPATH)
     set(CMAKE_MACOSX_RPATH 0)
 endif()
 
-set(INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}/bin" CACHE PATH "Installation directory for executables")
-set(INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib" CACHE PATH "Installation directory for libraries")
-set(INSTALL_INC_DIR "${CMAKE_INSTALL_PREFIX}/include" CACHE PATH "Installation directory for headers")
-set(INSTALL_MAN_DIR "${CMAKE_INSTALL_PREFIX}/share/man" CACHE PATH "Installation directory for manual pages")
-set(INSTALL_PKGCONFIG_DIR "${CMAKE_INSTALL_PREFIX}/share/pkgconfig" CACHE PATH "Installation directory for pkgconfig (.pc) files")
+set(INSTALL_BIN_DIR "bin" CACHE PATH "Installation directory for executables")
+set(INSTALL_LIB_DIR "lib" CACHE PATH "Installation directory for libraries")
+set(INSTALL_INC_DIR "include" CACHE PATH "Installation directory for headers")
+set(INSTALL_MAN_DIR "share/man" CACHE PATH "Installation directory for manual pages")
+set(INSTALL_PKGCONFIG_DIR "share/pkgconfig" CACHE PATH "Installation directory for pkgconfig (.pc) files")
 
 project("minizip")
 
-set(VERSION "2.2.1")
+set(VERSION "2.2.2")
 
 # Set cmake debug postfix to d
 set(CMAKE_DEBUG_POSTFIX "d")
@@ -74,7 +74,7 @@ if(WIN32)
 endif()
 
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore")
-    add_definitions(-DMZ_USING_WINRT_API)
+    add_definitions(-DMZ_USE_WINRT_API)
 endif()
 
 if(UNIX)
@@ -150,7 +150,6 @@ if(USE_BZIP2)
         lib/bzip2/crctable.c
         lib/bzip2/decompress.c
         lib/bzip2/huffman.c
-        lib/bzip2/mk251.c
         lib/bzip2/randtable.c)
 
     set(BZIP2_PUBLIC_HEADERS
@@ -364,6 +363,8 @@ target_link_libraries(${PROJECT_NAME} ZLIB::ZLIB)
 if(UNIX)
     target_link_libraries(${PROJECT_NAME} ${LIBBSD_LIBRARIES})
 endif()
+
+target_include_directories(${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:${INSTALL_INC_DIR}>)
 
 install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
         INCLUDES DESTINATION "${INSTALL_INC_DIR}"

@@ -1,5 +1,5 @@
 /* mz_strm.c -- Stream interface
-   Version 2.2.1, October 23rd, 2017
+   Version 2.2.2, October 26th, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -263,7 +263,7 @@ void mz_stream_delete(void **stream)
     if (stream == NULL)
         return;
     strm = (mz_stream *)*stream;
-    if (strm != NULL && strm->vtbl != NULL && strm->vtbl->delete != NULL)
-        strm->vtbl->delete(stream);
+    if (strm != NULL && strm->vtbl != NULL && strm->vtbl->destroy != NULL)
+        strm->vtbl->destroy(stream);
     *stream = NULL;
 }

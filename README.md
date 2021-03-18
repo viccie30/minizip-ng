@@ -1,4 +1,4 @@
-# Minizip 2.2.1
+# Minizip 2.2.2
 
 This library is a refactoring of the minizip contribution found in the zlib distribution that is supported on Windows, macOS, and Linux. The motivation for this work has been the inclusion of advanced features, improvements in code maintainability and readability, and the reduction of duplicate code. It is based on the original work of [Gilles Vollant](http://www.winimage.com/zLibDll/minizip.html) that has been contributed to by many people over the years.
 
@@ -105,9 +105,9 @@ void *mem_stream = NULL;
 
 mz_stream_mem_create(&mem_stream);
 mz_stream_mem_set_grow_size(mem_stream, (128 * 1024));
-mz_stream_open(mem_stream, NULL, MZ_STREAM_MODE_CREATE);
+mz_stream_open(mem_stream, NULL, MZ_OPEN_MODE_CREATE);
 
-void *zip_handle = mz_zip_open(mem_stream, MZ_STREAM_MODE_WRITE);
+void *zip_handle = mz_zip_open(mem_stream, MZ_OPEN_MODE_WRITE);
 // do unzip operations
 
 mz_stream_mem_delete(&mem_stream);
@@ -124,10 +124,10 @@ mz_stream_os_create(&stream)
 // do open os stream
 
 mz_stream_buffered_create(&buf_stream);
-mz_stream_buffered_open(buf_stream, NULL, MZ_STREAM_MODE_READ);
+mz_stream_buffered_open(buf_stream, NULL, MZ_OPEN_MODE_READ);
 mz_stream_buffered_set_base(buf_stream, stream);
 
-void *zip_handle = mz_zip_open(buf_stream, MZ_STREAM_MODE_READ);
+void *zip_handle = mz_zip_open(buf_stream, MZ_OPEN_MODE_READ);
 ```
 
 #### Disk Splitting Stream
@@ -147,7 +147,7 @@ mz_stream_set_base(split_stream, stream);
 
 mz_stream_open(split_stream, path..
 
-handle = mz_zip_open(split_stream, MZ_STREAM_MODE_WRITE);
+handle = mz_zip_open(split_stream, MZ_OPEN_MODE_WRITE);
 ```
 
 The central directory is the only data stored in the .zip and doesn't follow disk size restrictions.
@@ -156,7 +156,7 @@ When unzipping it will automatically determine when in needs to cross disk bound
 
 ### Windows RT
 
-+ Requires ``#define MZ_USING_WINRT_API``
++ Requires ``#define MZ_USE_WINRT_API``
 
 ## Limitations
 

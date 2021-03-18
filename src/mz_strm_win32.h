@@ -1,5 +1,5 @@
 /* mz_sstrm_win32.h -- Stream for filesystem access for windows
-   Version 2.2.1, October 23rd, 2017
+   Version 2.2.2, October 26th, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -41,7 +41,7 @@ void*   mz_stream_win32_get_interface(void);
 
 /***************************************************************************/
 
-#if defined(_WIN32) || defined(USEWIN32IOAPI)
+#if defined(_WIN32) || defined(MZ_USE_WIN32_API)
 #define mz_stream_os_open    mz_stream_win32_open
 #define mz_stream_os_is_open mz_stream_win32_is_open
 #define mz_stream_os_read    mz_stream_win32_read
@@ -56,15 +56,6 @@ void*   mz_stream_win32_get_interface(void);
 
 #define mz_stream_os_get_interface \
                              mz_stream_win32_get_interface
-
-#define mz_os_rand           mz_win32_rand
-#define mz_os_get_file_date  mz_win32_get_file_date
-#define mz_os_set_file_date  mz_win32_set_file_date
-#define mz_os_make_dir       mz_win32_make_dir
-#define mz_os_open_dir       mz_win32_open_dir
-#define mz_os_read_dir       mz_win32_read_dir
-#define mz_os_close_dir      mz_win32_close_dir
-#define mz_os_is_dir         mz_win32_is_dir
 #endif
 
 /***************************************************************************/

@@ -1,5 +1,5 @@
 /* mz_strm_posix.c -- Stream for filesystem access for posix/linux
-   Version 2.2.1, October 23rd, 2017
+   Version 2.2.2, October 26th, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -25,7 +25,7 @@
 
 /***************************************************************************/
 
-#if defined(USE_FILE32API)
+#if defined(MZ_USE_FILE32API)
 #  define fopen64 fopen
 #  define ftello64 ftell
 #  define fseeko64 fseek
@@ -95,8 +95,6 @@ int32_t mz_stream_posix_open(void *stream, const char *path, int32_t mode)
     if (posix->handle == NULL)
     {
         posix->error = errno;
-        if (posix->error == EEXIST)
-            return MZ_EXIST_ERROR;
         return MZ_STREAM_ERROR;
     }
 

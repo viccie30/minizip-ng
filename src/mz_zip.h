@@ -1,5 +1,5 @@
 /* mz_zip.h -- Zip manipulation
-   Version 2.2.1, October 23rd, 2017
+   Version 2.2.2, October 26th, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -17,15 +17,18 @@
 #ifndef _MZ_ZIP_H
 #define _MZ_ZIP_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <stdint.h>
+#include <time.h>
 
 #ifndef _ZLIB_H
 #  include "zlib.h"
 #endif
 
 #include "mz_strm.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /***************************************************************************/
 
@@ -61,7 +64,7 @@ typedef struct mz_zip_file_s
 
 /***************************************************************************/
 
-extern void * ZEXPORT mz_zip_open(void *stream, int32_t mode);
+extern void *  ZEXPORT mz_zip_open(void *stream, int32_t mode);
 // Create a zip file, no delete file in zip functionality
 
 extern int32_t ZEXPORT mz_zip_close(void *handle);

@@ -1,5 +1,5 @@
 /* mz_strm_posix.h -- Stream for filesystem access for posix/linux
-   Version 2.2.1, October 23rd, 2017
+   Version 2.2.2, October 26th, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -41,7 +41,7 @@ void*   mz_stream_posix_get_interface(void);
 
 /***************************************************************************/
 
-#if !defined(_WIN32) && !defined(USEWIN32IOAPI)
+#if !defined(_WIN32) && !defined(MZ_USE_WIN32_API)
 #define mz_stream_os_open    mz_stream_posix_open
 #define mz_stream_os_is_open mz_stream_posix_is_open
 #define mz_stream_os_read    mz_stream_posix_read

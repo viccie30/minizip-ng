@@ -1,5 +1,5 @@
 /* zip.c -- Zip manipulation
-   Version 2.2.1, October 23rd, 2017
+   Version 2.2.2, October 26th, 2017
    part of the MiniZip project
 
    Copyright (C) 2010-2017 Nathan Moinvaziri
@@ -929,7 +929,8 @@ static int32_t mz_zip_entry_write_header(void *stream, uint8_t local, mz_zip_fil
     }
     if (err == MZ_OK)
     {
-        dos_date = mz_zip_time_t_to_dos_date(file_info->modified_date);
+        if (file_info->modified_date != 0)
+            dos_date = mz_zip_time_t_to_dos_date(file_info->modified_date);
         err = mz_stream_write_uint32(stream, dos_date);
     }
 
@@ -1215,7 +1216,7 @@ extern int32_t ZEXPORT mz_zip_entry_read_open(void *handle, int16_t raw, const c
     if (err == MZ_OK)
         err = mz_zip_entry_read_header(zip->stream, 1, &zip->local_file_info, zip->local_file_info_stream);
 
-    compression_method = zip->compression_method;
+    compression_method = zip->file_info.compression_method;
     if (raw)
         compression_method = MZ_COMPRESS_METHOD_RAW;
 
@@ -1553,10 +1554,13 @@ time_t mz_zip_dosdate_to_time_t(uint64_t dos_date)
 
 int32_t mz_zip_time_t_to_tm(time_t unix_time, struct tm *ptm)
 {
+    struct tm *ltm = NULL;
     if (ptm == NULL)
         return MZ_PARAM_ERROR;
-
-    memcpy(ptm, localtime(&unix_time), sizeof(struct tm));
+    ltm = localtime(&unix_time);
+    if (ltm == NULL)
+        return MZ_INTERNAL_ERROR;
+    memcpy(ptm, ltm, sizeof(struct tm));
     return MZ_OK;
 }
 

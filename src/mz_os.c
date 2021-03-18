@@ -1,9 +1,11 @@
 /* mz_os.c -- System functions
-   Version 2.2.1, October 23rd, 2017
+   Version 2.2.2, October 26th, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
      https://github.com/nmoinvaz/minizip
+   Copyright (C) 1998-2010 Gilles Vollant
+     http://www.winimage.com/zLibDll/minizip.html
 
    This program is distributed under the terms of the same license as zlib.
    See the accompanying LICENSE file for the full text of the license.
@@ -14,49 +16,11 @@
 #include <string.h>
 
 #include "mz.h"
-#include "mz_strm.h"
-
 #include "mz_os.h"
+#include "mz_strm.h"
+#include "mz_strm_zlib.h"
 
 /***************************************************************************/
-
-int32_t mz_file_exists(const char *path)
-{
-    int32_t err = MZ_OK;
-    void *stream = NULL;
-
-    mz_stream_os_create(&stream);
-
-    err = mz_stream_os_open(stream, path, MZ_OPEN_MODE_READ);
-    if (err == MZ_OK)
-        mz_stream_os_close(stream);
-
-    mz_stream_os_delete(&stream);
-
-    if (err == MZ_EXIST_ERROR)
-        return MZ_EXIST_ERROR;
-
-    return MZ_OK;
-}
-
-int64_t mz_file_get_size(const char *path)
-{
-    void *stream = NULL;
-    int64_t size = 0;
-
-    mz_stream_os_create(&stream);
-
-    if (mz_stream_os_open(stream, path, MZ_OPEN_MODE_READ) == MZ_OK)
-    {
-        mz_stream_os_seek(stream, 0, MZ_SEEK_END);
-        size = mz_stream_os_tell(stream);
-        mz_stream_os_close(stream);
-    }
-
-    mz_stream_os_delete(&stream);
-
-    return size;
-}
 
 int32_t mz_make_dir(const char *path)
 {
@@ -127,4 +91,47 @@ int32_t mz_path_combine(char *path, const char *join, int32_t max_path)
     }
 
     return MZ_OK;
+}
+
+int32_t mz_get_file_crc(const char *path, uint32_t *result_crc)
+{
+    void *stream = NULL;
+    void *crc32_stream = NULL;
+    uint32_t read = 0;
+    uint8_t buf[INT16_MAX];
+    int32_t err = MZ_OK;
+
+    mz_stream_os_create(&stream);
+
+    err = mz_stream_os_open(stream, path, MZ_OPEN_MODE_READ);
+
+    mz_stream_crc32_create(&crc32_stream);
+    mz_stream_crc32_open(crc32_stream, NULL, MZ_OPEN_MODE_READ);
+
+    mz_stream_set_base(crc32_stream, stream);
+
+    if (err == MZ_OK)
+    {
+        do
+        {
+            read = mz_stream_crc32_read(crc32_stream, buf, sizeof(buf));
+
+            if (read < 0)
+            {
+                err = read;
+                break;
+            }
+        }
+        while ((err == MZ_OK) && (read > 0));
+
+        mz_stream_os_close(stream);
+    }
+
+    mz_stream_crc32_close(crc32_stream);
+    *result_crc = mz_stream_crc32_get_value(crc32_stream);
+    mz_stream_crc32_delete(&crc32_stream);
+
+    mz_stream_os_delete(&stream);
+
+    return err;
 }
