@@ -1,5 +1,5 @@
 /* mz.h -- Errors codes, zip flags and magic
-   Version 2.1.0, October 20th, 2017
+   Version 2.1.1, October 21st, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -22,11 +22,11 @@ extern "C" {
 
 // MZ_ERROR
 #define MZ_OK                           (0)
-#define MZ_EOF                          (MZ_OK)
 #define MZ_STREAM_ERROR                 (-1)
 #define MZ_DATA_ERROR                   (-3)
 #define MZ_MEM_ERROR                    (-4)
 #define MZ_END_OF_LIST                  (-100)
+#define MZ_END_OF_STREAM                (-101)
 #define MZ_PARAM_ERROR                  (-102)
 #define MZ_FORMAT_ERROR                 (-103)
 #define MZ_INTERNAL_ERROR               (-104)
@@ -64,7 +64,7 @@ extern "C" {
 #define MZ_AES_ENCRYPTION_MODE_256      (0x03)
 
 // MZ_VERSION
-#define MZ_VERSION                      ("2.1.0")
+#define MZ_VERSION                      ("2.1.1")
 
 /***************************************************************************/
 
