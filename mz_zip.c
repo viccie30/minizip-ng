@@ -1,5 +1,5 @@
 /* zip.c -- Zip manipulation
-   Version 2.8.7, May 9, 2019
+   Version 2.8.8, May 22, 2019
    part of the MiniZip project
 
    Copyright (C) 2010-2019 Nathan Moinvaziri
@@ -45,11 +45,11 @@
 #include <ctype.h> /* tolower */
 #include <stdio.h> /* snprintf */
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__MINGW32__)
 #  define localtime_r(t1,t2) (localtime_s(t2,t1) == 0 ? t1 : NULL)
-#  if (_MSC_VER < 1900)
-#    define snprintf _snprintf
-#  endif 
+#endif
+#if defined(_MSC_VER) && (_MSC_VER < 1900)
+#  define snprintf _snprintf
 #endif
 
 /***************************************************************************/
