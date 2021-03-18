@@ -1,5 +1,4 @@
 /* test.c - Test bed area
-   Version 2.9.3, May 21, 2020
    part of the MiniZip project
 
    Copyright (C) 2018-2020 Nathan Moinvaziri
@@ -794,7 +793,7 @@ int32_t test_zip_compat_int(zipFile zip, char *filename)
         printf("Failed to create new file in zip (%" PRId32 ")\n", err);
         return err;
     }
-    err = zipWriteInFileInZip(zip, buffer, strlen(buffer));
+    err = zipWriteInFileInZip(zip, buffer, (uint32_t)strlen(buffer));
     if (err != ZIP_OK)
     {
         printf("Failed to write file in zip (%" PRId32 ")\n", err);
@@ -919,7 +918,7 @@ static int32_t test_unzip_compat_int(unzFile unzip)
             return err;
         }
         bytes_read = unzReadCurrentFile(unzip, buffer, sizeof(buffer));
-        if (bytes_read != strlen(test_data))
+        if (bytes_read != (int32_t)strlen(test_data))
         {
             printf("Failed to read zip entry data (%" PRId32 ")\n", err);
             unzCloseCurrentFile(unzip);
