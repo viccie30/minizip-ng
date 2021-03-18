@@ -1,4 +1,4 @@
-# Minizip 2.0
+# Minizip 2.0.1
 
 This library is a refactoring of the minizip contribution found in the zlib distribution that is supported on Windows, macOS, and Linux. It is based on the original work of [Gilles Vollant](http://www.winimage.com/zLibDll/minizip.html) that has been contributed to by many people over the years.
 
@@ -23,13 +23,13 @@ cmake --build .
 | miniunz.c | Sample unzip application | No |
 | minizip.c | Sample zip application | No | 
 | mz_compat.\* | Minizip 1.0 compatibility layer | No |
-| mz_error.h | Error codes for all the functions | Yes |
+| mz.h | Error codes and flags | Yes |
 | mz_os\* | OS specific helper functions | Encryption |
 | mz_strm.\* | Stream interface | Yes |
 | mz_strm_aes.\* | WinZIP AES stream | No |
 | mz_strm_buf.\* | Buffered stream | No |
 | mz_strm_bzip.\* | BZIP2 stream using libbzip2 | No |
-| mz_strm_crypt.\* | PKWARE traditional encryption stream | Yes |
+| mz_strm_crypt.\* | PKWARE traditional encryption stream | No |
 | mz_strm_lzma.\* | LZMA stream using liblzma | No |
 | mz_strm_mem.\* | Memory stream | Yes |
 | mz_strm_split.\* | Disk splitting stream | No |
@@ -125,24 +125,33 @@ When unzipping it will automatically determine when in needs to cross disk bound
 
 #### BZIP2
 
-+ Requires #define HAVE_BZIP2
++ Requires ``cmake . -DUSE_BZIP2=ON`` or ``#define HAVE_BZIP2``
 + Requires [BZIP2](http://www.bzip.org/) library
 
 #### LZMA
 
-+ Requires #define HAVE_LZMA
++ Requires ``cmake . -DUSE_LZMA=ON`` or ``#define HAVE_LZMA``
 + Requires [liblzma](https://tukaani.org/xz/) library
 
 ### Encryption
 
 #### [WinZIP AES Encryption](http://www.winzip.com/aes_info.htm)
 
-+ Requires #define HAVE_AES
++ Requires ``cmake . -DUSE_AES=ON`` or ``#define HAVE_AES``
 + Requires [Brian Gladman's](https://github.com/BrianGladman/aes) AES library
 
 When zipping with a password it will always use AES 256-bit encryption.
 When unzipping it will use AES decryption only if necessary. Does not support central directory or local file header encryption since it is not supported outside of PKZIP. For a more secure method it is best to just encrypt the zip post-process.
 
+#### Disabling All Encryption
+
+To disable encryption use the following cmake commands:
+
+```
+cmake . -DUSE_AES=OFF
+cmake . -DUSE_CRYPT=OFF
+```
+
 ### Windows RT
 
-+ Requires #define IOWIN32_USING_WINRT_API
++ Requires ``#define MZ_USING_WINRT_API``

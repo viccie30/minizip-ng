@@ -26,7 +26,7 @@ set(INSTALL_PKGCONFIG_DIR "${CMAKE_INSTALL_PREFIX}/share/pkgconfig" CACHE PATH "
 
 project("minizip")
 
-set(VERSION "2.0.0")
+set(VERSION "2.0.1")
 
 # Set cmake debug postfix to d
 set(CMAKE_DEBUG_POSTFIX "d")
@@ -71,6 +71,10 @@ if(WIN32)
     list(APPEND MINIZIP_PUBLIC_HEADERS "src/mz_os_win32.h" "src/mz_strm_win32.h")
 
     add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
+endif()
+
+if("${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore")
+    add_definitions(-DMZ_USING_WINRT_API)
 endif()
 
 if(UNIX)
@@ -374,7 +378,7 @@ install(EXPORT ${PROJECT_NAME}
 install(FILES ${MINIZIP_PUBLIC_HEADERS} DESTINATION "${INSTALL_INC_DIR}")
 install(FILES ${MINIZIP_PC} DESTINATION "${INSTALL_PKGCONFIG_DIR}")
 
-#if(BUILD_TEST)
+if(BUILD_TEST)
     add_executable(miniunz "src/miniunz.c")
     target_link_libraries(miniunz ${PROJECT_NAME})
 
@@ -383,4 +387,4 @@ install(FILES ${MINIZIP_PC} DESTINATION "${INSTALL_PKGCONFIG_DIR}")
 
     install(TARGETS miniunz minizip
             RUNTIME DESTINATION "bin")
-#endif()
+endif()
