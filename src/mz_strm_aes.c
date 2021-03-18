@@ -1,5 +1,5 @@
 /* mz_strm_aes.c -- Stream for WinZip AES encryption
-   Version 2.2.4, November 15th, 2017
+   Version 2.2.5, January 3rd, 2018
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -84,7 +84,6 @@ int32_t mz_stream_aes_open(void *stream, const char *path, int32_t mode)
     const char *password = path;
     int32_t password_length = 0;
     int32_t key_length = 0;
-    int32_t err = MZ_OK;
 
     aes->total_in = 0;
     aes->total_out = 0;
@@ -117,12 +116,12 @@ int32_t mz_stream_aes_open(void *stream, const char *path, int32_t mode)
 
     key_length = MZ_AES_KEY_LENGTH(aes->encryption_mode);
     // Derive the encryption and authentication keys and the password verifier
-    derive_key(password, password_length, salt_value, salt_length,
+    derive_key((const uint8_t *)password, password_length, salt_value, salt_length,
         MZ_AES_KEYING_ITERATIONS, kbuf, 2 * key_length + MZ_AES_PW_VERIFY_SIZE);
 
     // Initialize the encryption nonce and buffer pos
     aes->encr_pos = AES_BLOCK_SIZE;
-    memset(aes->nonce, 0, AES_BLOCK_SIZE * sizeof(unsigned char));
+    memset(aes->nonce, 0, AES_BLOCK_SIZE * sizeof(uint8_t));
 
     // Initialize for encryption using key 1
     aes_encrypt_key(kbuf, key_length, aes->encr_ctx);
@@ -155,7 +154,7 @@ int32_t mz_stream_aes_open(void *stream, const char *path, int32_t mode)
         aes->total_in += MZ_AES_PW_VERIFY_SIZE;
 
         if (memcmp(verify_expected, verify, MZ_AES_PW_VERIFY_SIZE) != 0)
-            return MZ_STREAM_ERROR;
+            return MZ_PASSWORD_ERROR;
     }
 
     aes->mode = mode;
@@ -172,7 +171,7 @@ int32_t mz_stream_aes_is_open(void *stream)
     return MZ_OK;
 }
 
-int32_t mz_stream_aes_encrypt_data(void *stream, uint8_t *buf, int32_t size)
+static int32_t mz_stream_aes_encrypt_data(void *stream, uint8_t *buf, int32_t size)
 {
     mz_stream_aes *aes = (mz_stream_aes *)stream;
     uint32_t pos = aes->encr_pos;

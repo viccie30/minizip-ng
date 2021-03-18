@@ -1,5 +1,5 @@
 /* mz_strm_posix.c -- Stream for filesystem access for posix/linux
-   Version 2.2.4, November 15th, 2017
+   Version 2.2.5, January 3rd, 2018
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -113,9 +113,9 @@ int32_t mz_stream_posix_read(void *stream, void *buf, int32_t size)
 {
     mz_stream_posix *posix = (mz_stream_posix*)stream;
     int32_t read = (int32_t)fread(buf, 1, (size_t)size, posix->handle);
-    if (read < 0)
+    if (read < size && ferror(posix->handle))
     {
-        posix->error = ferror(posix->handle);
+        posix->error = errno;
         return MZ_STREAM_ERROR;
     }
     return read;
@@ -125,9 +125,9 @@ int32_t mz_stream_posix_write(void *stream, const void *buf, int32_t size)
 {
     mz_stream_posix *posix = (mz_stream_posix*)stream;
     int32_t written = (int32_t)fwrite(buf, 1, (size_t)size, posix->handle);
-    if (written < 0)
+    if (written < size && ferror(posix->handle))
     {
-        posix->error = ferror(posix->handle);
+        posix->error = errno;
         return MZ_STREAM_ERROR;
     }
     return written;
@@ -139,7 +139,7 @@ int64_t mz_stream_posix_tell(void *stream)
     int64_t position = ftello64(posix->handle);
     if (position == -1)
     {
-        posix->error = ferror(posix->handle);
+        posix->error = errno;
         return MZ_STREAM_ERROR;
     }
     return position;
@@ -167,7 +167,7 @@ int32_t mz_stream_posix_seek(void *stream, int64_t offset, int32_t origin)
 
     if (fseeko64(posix->handle, offset, fseek_origin) != 0)
     {
-        posix->error = ferror(posix->handle);
+        posix->error = errno;
         return MZ_STREAM_ERROR;
     }
 

@@ -1,5 +1,5 @@
 /* mz_strm_crypt.c -- Code for traditional PKWARE encryption
-   Version 2.2.4, November 15th, 2017
+   Version 2.2.5, January 3rd, 2018
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -80,7 +80,7 @@ typedef struct mz_stream_crypt_s {
 
 /***************************************************************************/
 
-uint8_t mz_stream_crypt_decrypt_byte(uint32_t *keys)
+static uint8_t mz_stream_crypt_decrypt_byte(uint32_t *keys)
 {
     unsigned temp;  /* POTENTIAL BUG:  temp*(temp^1) may overflow in an
                      * unpredictable manner on 16-bit systems; not a problem
@@ -90,7 +90,7 @@ uint8_t mz_stream_crypt_decrypt_byte(uint32_t *keys)
     return (uint8_t)(((temp * (temp ^ 1)) >> 8) & 0xff);
 }
 
-uint8_t mz_stream_crypt_update_keys(uint32_t *keys, const z_crc_t *crc_32_tab, int32_t c)
+static uint8_t mz_stream_crypt_update_keys(uint32_t *keys, const z_crc_t *crc_32_tab, int32_t c)
 {
     #define CRC32(c, b) ((*(crc_32_tab+(((uint32_t)(c) ^ (b)) & 0xff))) ^ ((c) >> 8))
 
@@ -104,7 +104,7 @@ uint8_t mz_stream_crypt_update_keys(uint32_t *keys, const z_crc_t *crc_32_tab, i
     return (uint8_t)c;
 }
 
-void mz_stream_crypt_init_keys(const char *password, uint32_t *keys, const z_crc_t *crc_32_tab)
+static void mz_stream_crypt_init_keys(const char *password, uint32_t *keys, const z_crc_t *crc_32_tab)
 {
     *(keys+0) = 305419896L;
     *(keys+1) = 591751049L;
@@ -124,6 +124,8 @@ int32_t mz_stream_crypt_open(void *stream, const char *path, int32_t mode)
     mz_stream_crypt *crypt = (mz_stream_crypt *)stream;
     uint16_t t = 0;
     int16_t i = 0;
+    uint8_t verify1 = 0;
+    uint8_t verify2 = 0;
     uint8_t header[RAND_HEAD_LEN];
     const char *password = path;
 
@@ -170,8 +172,12 @@ int32_t mz_stream_crypt_open(void *stream, const char *path, int32_t mode)
         for (i = 0; i < RAND_HEAD_LEN - 2; i++)
             header[i] = (uint8_t)zdecode(crypt->keys, crypt->crc_32_tab, header[i]);
 
-        crypt->verify1 = (uint8_t)zdecode(crypt->keys, crypt->crc_32_tab, header[i++]);
-        crypt->verify2 = (uint8_t)zdecode(crypt->keys, crypt->crc_32_tab, header[i++]);
+        verify1 = (uint8_t)zdecode(crypt->keys, crypt->crc_32_tab, header[i++]);
+        verify2 = (uint8_t)zdecode(crypt->keys, crypt->crc_32_tab, header[i++]);
+
+        // Older versions used 2 byte check, newer versions use 1 byte check.
+        if ((verify2 != 0) && (verify2 != crypt->verify2))
+            return MZ_PASSWORD_ERROR;
 
         crypt->total_in += RAND_HEAD_LEN;
     }

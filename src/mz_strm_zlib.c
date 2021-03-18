@@ -1,5 +1,5 @@
 /* mz_strm_zlib.c -- Stream for zlib inflate/deflate
-   Version 2.2.4, November 15th, 2017
+   Version 2.2.5, January 3rd, 2018
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -195,7 +195,7 @@ int32_t mz_stream_zlib_read(void *stream, void *buf, int32_t size)
     return total_out;
 }
 
-int32_t mz_stream_zlib_flush(void *stream)
+static int32_t mz_stream_zlib_flush(void *stream)
 {
     mz_stream_zlib *zlib = (mz_stream_zlib *)stream;
     if (mz_stream_write(zlib->stream.base, zlib->buffer, zlib->buffer_len) != zlib->buffer_len)
@@ -203,7 +203,7 @@ int32_t mz_stream_zlib_flush(void *stream)
     return MZ_OK;
 }
 
-int32_t mz_stream_zlib_deflate(void *stream, int flush)
+static int32_t mz_stream_zlib_deflate(void *stream, int flush)
 {
     mz_stream_zlib *zlib = (mz_stream_zlib *)stream;
     uint64_t total_out_before = 0;
@@ -234,16 +234,18 @@ int32_t mz_stream_zlib_deflate(void *stream, int flush)
 
         out_bytes = (uint32_t)(total_out_after - total_out_before);
 
-        if (err != Z_OK && err != Z_STREAM_END)
+        zlib->buffer_len += out_bytes;
+        zlib->total_out += out_bytes;
+
+        if (err == Z_STREAM_END)
+            break;
+        if (err != Z_OK)
         {
             zlib->error = err;
             return MZ_STREAM_ERROR;
         }
-
-        zlib->buffer_len += out_bytes;
-        zlib->total_out += out_bytes;
     }
-    while (zlib->zstream.avail_in > 0);
+    while ((zlib->zstream.avail_in > 0) || (flush == Z_FINISH && err == Z_OK));
 
     return MZ_OK;
 }
@@ -369,7 +371,12 @@ void *mz_stream_zlib_get_interface(void)
     return (void *)&mz_stream_zlib_vtbl;
 }
 
+static int32_t mz_stream_zlib_crc32(int32_t value, const void *buf, int32_t size)
+{
+    return crc32(value, buf, size);
+}
+
 void *mz_stream_zlib_get_crc32_update(void)
 {
-    return (void *)crc32;
+    return (void *)mz_stream_zlib_crc32;
 }

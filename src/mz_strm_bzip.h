@@ -1,5 +1,5 @@
 /* mz_strm_bzip.h -- Stream for bzip inflate/deflate
-   Version 2.2.4, November 15th, 2017
+   Version 2.2.5, January 3rd, 2018
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -36,6 +36,8 @@ void*   mz_stream_bzip_create(void **stream);
 void    mz_stream_bzip_delete(void **stream);
 
 void*   mz_stream_bzip_get_interface(void);
+
+void    bz_internal_error(int errcode);
 
 /***************************************************************************/
 

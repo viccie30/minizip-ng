@@ -1,5 +1,5 @@
 /* mz_strm_bzip.c -- Stream for bzip inflate/deflate
-   Version 2.2.4, November 15th, 2017
+   Version 2.2.5, January 3rd, 2018
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -190,7 +190,7 @@ int32_t mz_stream_bzip_read(void *stream, void *buf, int32_t size)
     return total_out;
 }
 
-int32_t mz_stream_bzip_flush(void *stream)
+static int32_t mz_stream_bzip_flush(void *stream)
 {
     mz_stream_bzip *bzip = (mz_stream_bzip *)stream;
     if (mz_stream_write(bzip->stream.base, bzip->buffer, bzip->buffer_len) != bzip->buffer_len)
@@ -198,7 +198,7 @@ int32_t mz_stream_bzip_flush(void *stream)
     return MZ_OK;
 }
 
-int32_t mz_stream_bzip_compress(void *stream, int flush)
+static int32_t mz_stream_bzip_compress(void *stream, int flush)
 {
     mz_stream_bzip *bzip = (mz_stream_bzip *)stream;
     uint64_t total_out_before = 0;

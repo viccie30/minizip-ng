@@ -27,7 +27,7 @@ set(INSTALL_PKGCONFIG_DIR "share/pkgconfig" CACHE PATH "Installation directory f
 
 project("minizip")
 
-set(VERSION "2.2.4")
+set(VERSION "2.2.5")
 
 # Set cmake debug postfix to d
 set(CMAKE_DEBUG_POSTFIX "d")
@@ -81,7 +81,7 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore")
 endif()
 
 if(UNIX)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -O3")
+    add_compile_options(-fPIC -O3)
 
     list(APPEND MINIZIP_SRC "src/mz_os_posix.c")
     list(APPEND MINIZIP_PUBLIC_HEADERS "src/mz_os_posix.h")
@@ -89,14 +89,16 @@ if(UNIX)
     add_definitions(-D__USE_FILE_OFFSET64)
     add_definitions(-D__USE_LARGEFILE64)
     add_definitions(-D_LARGEFILE64_SOURCE)
-    add_definitions(-D_FILE_OFFSET_BIT=64)
+    add_definitions(-D_FILE_OFFSET_BITS=64)
 
     find_package(PkgConfig REQUIRED)
 
-    pkg_check_modules(LIBBSD libbsd)
+    if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+        pkg_check_modules(LIBBSD libbsd REQUIRED)
 
-    include_directories(${LIBBSD_INCLUDE_DIRS})
-    link_directories(${LIBBSD_LIBRARY_DIRS})
+        include_directories(${LIBBSD_INCLUDE_DIRS})
+        link_directories(${LIBBSD_LIBRARY_DIRS})
+    endif()
 endif()
 
 if(USE_CRYPT)
@@ -274,7 +276,7 @@ if(USE_LZMA)
 endif()
 
 if(CMAKE_C_COMPILER MATCHES ".*clang")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse3 -msse4.1 -maes")
+    add_compile_options(-msse3 -msse4.1 -maes)
 endif()
 
 # Create minizip library

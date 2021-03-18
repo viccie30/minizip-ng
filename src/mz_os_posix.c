@@ -1,5 +1,5 @@
 /* mz_os_posix.c -- System functions for posix
-   Version 2.2.4, November 15th, 2017
+   Version 2.2.5, January 3rd, 2018
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -21,8 +21,10 @@
 #  include <unistd.h>
 #  include <utime.h>
 #endif
-#if defined unix
+#if defined __linux__
 #  include <bsd/stdlib.h>
+#else
+#  include <stdlib.h>
 #endif
 
 #include "mz.h"
@@ -63,10 +65,8 @@ int64_t mz_posix_get_file_size(const char *path)
 int32_t mz_posix_get_file_date(const char *path, time_t *modified_date, time_t *accessed_date, time_t *creation_date)
 {
     struct stat stat_info;
-    struct tm *filedate = NULL;
     char *name = NULL;
     size_t len = 0;
-    time_t tm_t = 0;
     int32_t err = MZ_INTERNAL_ERROR;
 
 
