@@ -1,5 +1,5 @@
 /* mz_strm.h -- Stream interface
-   Version 2.3.2, May 29, 2018
+   Version 2.3.3, June 10, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -99,7 +99,7 @@ void    mz_stream_delete(void **stream);
 
 /***************************************************************************/
 
-typedef int32_t (*mz_stream_crc32_update)(int32_t value, const void *buf, int32_t size);
+typedef int64_t (*mz_stream_crc32_update)(int64_t value, const void *buf, int32_t size);
 
 int32_t mz_stream_crc32_open(void *stream, const char *filename, int32_t mode);
 int32_t mz_stream_crc32_is_open(void *stream);
