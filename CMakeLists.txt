@@ -36,7 +36,7 @@ set(INSTALL_PKGCONFIG_DIR ${CMAKE_INSTALL_LIBDIR}/pkgconfig CACHE PATH "Installa
 set(INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/minizip CACHE PATH "Installation directory for cmake files.")
 
 # Minizip library version
-set(VERSION "2.7.1")
+set(VERSION "2.7.2")
 
 # Minizip api version
 set(SOVERSION "2.5")
@@ -58,12 +58,19 @@ if(USE_ZLIB)
         include_directories(${ZLIB_INCLUDE_DIRS})
         add_definitions(-DHAVE_ZLIB)
     else()
-        message(STATUS "Using external ZLIB")
+        if (NOT ZLIB_TAG)
+            set(ZLIB_TAG master)
+        endif()
+        if (NOT ZLIB_REPOSITORY)
+            set(ZLIB_REPOSITORY https://github.com/madler/zlib)
+        endif()
+
+        message(STATUS "Using ZLIB ${ZLIB_REPOSITORY} ${ZLIB_TAG}")
 
         set(ZLIB_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/lib/zlib)
-        set(ZLIB_INSTALL_DIR ${ZLIB_SOURCE_DIR}/install)
+        set(ZLIB_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/install/zlib)
         set(ZLIB_INCLUDE_DIRS ${ZLIB_INSTALL_DIR}/include)
-        
+
         if(WIN32)
             if(${CMAKE_GENERATOR} MATCHES "Visual Studio.*")
                 set(ZLIB_LIBRARIES
@@ -82,17 +89,18 @@ if(USE_ZLIB)
             set(ZLIB_LIBRARIES
                 ${ZLIB_INSTALL_DIR}/lib/libz.a)
         endif()
-
+        
         ExternalProject_Add(zlib
             PREFIX zlib
-            GIT_REPOSITORY https://github.com/madler/zlib
-            GIT_TAG master
+            GIT_REPOSITORY ${ZLIB_REPOSITORY}
+            GIT_TAG ${ZLIB_TAG}
             SOURCE_DIR ${ZLIB_SOURCE_DIR}
             BUILD_IN_SOURCE 1
             INSTALL_DIR ${ZLIB_INSTALL_DIR}
             BUILD_BYPRODUCTS ${ZLIB_STATIC_LIBRARIES}
             CMAKE_CACHE_ARGS
                 -DCMAKE_INSTALL_PREFIX:STRING=${ZLIB_INSTALL_DIR}
+                -DZLIB_COMPAT:STRING=ON
         )
 
         include_directories(${ZLIB_INCLUDE_DIRS})
@@ -178,13 +186,40 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore")
     add_definitions(-DMZ_WINRT_API)
 endif()
 
+# Create compatibility headers
+if (USE_COMPAT)
+    set(COMPAT_HEADER "\
+/* file.h -- Compatibility layer shim\n\
+   part of the MiniZip project\n\n\
+   This program is distributed under the terms of the same license as zlib.\n\
+   See the accompanying LICENSE file for the full text of the license.\n\
+*/\n\n\
+#ifndef MZ_COMPAT_FILE\n\
+#define MZ_COMPAT_FILE\n\
+#include \"mz_compat.h\"\n\
+#endif\n")
+    string(REPLACE "file.h" "zip.h" ZIP_COMPAT_HEADER ${COMPAT_HEADER})
+    string(REPLACE "MZ_COMPAT_FILE" "MZ_COMPAT_ZIP" ZIP_COMPAT_HEADER ${ZIP_COMPAT_HEADER})
+    file(WRITE "zip.h" ${ZIP_COMPAT_HEADER})
+    list(APPEND MINIZIP_PUBLIC_HEADERS "zip.h") 
+    string(REPLACE "file.h" "unzip.h" UNZIP_COMPAT_HEADER ${COMPAT_HEADER})
+    string(REPLACE "MZ_COMPAT_FILE" "MZ_COMPAT_UNZIP" UNZIP_COMPAT_HEADER ${UNZIP_COMPAT_HEADER})
+    file(WRITE "unzip.h" ${UNZIP_COMPAT_HEADER})
+    list(APPEND MINIZIP_PUBLIC_HEADERS "unzip.h")
+endif()
+
 # Unix specific
 if(UNIX)
     list(APPEND MINIZIP_SRC "mz_os_posix.c" "mz_strm_os_posix.c")
     
     if ((USE_PKCRYPT OR USE_AES) AND (NOT USE_OPENSSL AND NOT OPENSSL_FOUND))
-        set(USE_BRG TRUE)
-
+        
+        if (APPLE AND NOT USE_BRG)
+            list(APPEND MINIZIP_SRC "mz_crypt_apple.c")
+        else()
+            set(USE_BRG TRUE)
+        endif()
+        
         # Check to see which random generation functions we have 
         check_symbol_exists("getrandom" "sys/random.h" HAVE_GETRANDOM)
         if (HAVE_GETRANDOM)
@@ -238,7 +273,6 @@ if(UNIX)
     if (Iconv_FOUND)
         message(STATUS "Using Iconv")
         include_directories(${Iconv_INCLUDE_DIRS})
-        link_directories(${Iconv_LIBRARIES})
     endif()
 
 endif()
@@ -521,9 +555,15 @@ if(Iconv_FOUND AND NOT Iconv_IS_BUILT_IN)
 endif()
 if(USE_OPENSSL AND OPENSSL_FOUND)
     target_link_libraries(${PROJECT_NAME} ${OPENSSL_LIBRARIES})
-endif()
-if(UNIX)
-    target_link_libraries(${PROJECT_NAME} ${LIBBSD_LIBRARIES})
+elseif(UNIX)
+    if(APPLE AND NOT USE_BRG)
+        message(STATUS "Using Security Framework")
+        target_link_libraries(${PROJECT_NAME} "-framework CoreFoundation")
+        target_link_libraries(${PROJECT_NAME} "-framework Security")
+        set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-Wl,-F/Library/Frameworks")
+    else()
+        target_link_libraries(${PROJECT_NAME} ${LIBBSD_LIBRARIES})
+    endif()
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:${INSTALL_INC_DIR}>)

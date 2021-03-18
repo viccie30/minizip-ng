@@ -1,5 +1,5 @@
 /* mz_crypt.h -- Crypto/hash functions
-   Version 2.7.1, November 1, 2018
+   Version 2.7.2, November 2, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -48,8 +48,8 @@ void     mz_crypt_hmac_set_algorithm(void *handle, uint16_t algorithm);
 void*    mz_crypt_hmac_create(void **handle);
 void     mz_crypt_hmac_delete(void **handle);
 
-int32_t  mz_crypt_sign(uint8_t *message, int32_t message_size, const char *cert_path, const char *cert_pwd,
-    uint8_t **signature, int32_t *signature_size);
+int32_t  mz_crypt_sign(uint8_t *message, int32_t message_size, uint8_t *cert_data, int32_t cert_data_size,
+            const char *cert_pwd, uint8_t **signature, int32_t *signature_size);
 int32_t  mz_crypt_sign_verify(uint8_t *message, int32_t message_size, uint8_t *signature, int32_t signature_size);
 
 /***************************************************************************/
