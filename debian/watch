@@ -1,0 +1,4 @@
+version=4
+
+https://github.com/zlib-ng/minizip-ng/releases \
+    (?:.*?/)?v?@ANY_VERSION@\.tar\.gz debian

@@ -1,0 +1,12 @@
+LICENSE.*
+build-shared/
+build-static/
+compat.zip
+mytest.zip
+test/cacert.pem
+test/out/
+test/random.bin.gz
+test/result.z01
+test/result.zip
+unzip.h
+zip.h

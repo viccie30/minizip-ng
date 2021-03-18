@@ -1,0 +1,5 @@
+usr/include/minizip-ng/
+usr/lib/${DEB_HOST_MULTIARCH}/cmake/minizip/
+usr/lib/${DEB_HOST_MULTIARCH}/libminizip.a
+usr/lib/${DEB_HOST_MULTIARCH}/libminizip.so
+usr/lib/${DEB_HOST_MULTIARCH}/pkgconfig/minizip.pc

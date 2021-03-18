@@ -1,0 +1,60 @@
+Source: minizip-ng
+Priority: optional
+Maintainer: Victor Westerhuis <victor@westerhu.is>
+Build-Depends: cmake,
+               debhelper-compat (= 13),
+               libbz2-dev,
+               liblzma-dev,
+               libssl-dev,
+               libz-dev,
+               libzstd-dev,
+               pkg-config
+Standards-Version: 4.5.1
+Section: libs
+Homepage: https://github.com/zlib-ng/minizip-ng
+Vcs-Browser: https://github.com/viccie30/minizip-ng
+Vcs-Git: https://github.com/viccie30/minizip-ng.git
+Rules-Requires-Root: no
+
+Package: libminizip-ng3.0
+Architecture: any
+Multi-Arch: same
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: zip manipulation library - runtime
+ minizip-ng is a minimalistic library that supports compressing, extracting,
+ viewing, and manipulating zip files. It is a fork of the original minizip
+ library included with zlib, rewritten and with features added.
+ .
+ This package includes the shared library.
+
+Package: libminizip-ng-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Depends: libbz2-dev,
+         liblzma-dev,
+         libssl-dev,
+         libz-dev,
+         libzstd-dev,
+         libminizip-ng3.0 (= ${binary:Version}),
+         ${misc:Depends}
+Conflicts: libminizip-dev
+Replaces: libminizip-dev
+Description: zip manipulation library - development
+ minizip-ng is a minimalistic library that supports compressing, extracting,
+ viewing, and manipulating zip files. It is a fork of the original minizip
+ library included with zlib, rewritten and with features added.
+ .
+ This package includes the development support files.
+
+Package: minizip-ng
+Section: utils
+Architecture: any
+Multi-Arch: foreign
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: zip manipulation library - binaries
+ minizip-ng is a minimalistic library that supports compressing, extracting,
+ viewing, and manipulating zip files. It is a fork of the original minizip
+ library included with zlib, rewritten and with features added.
+ .
+ This package includes the minizip and minigzip binaries.
