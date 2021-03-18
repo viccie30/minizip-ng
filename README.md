@@ -1,6 +1,6 @@
-# Minizip 2.0.1
+# Minizip 2.1.0
 
-This library is a refactoring of the minizip contribution found in the zlib distribution that is supported on Windows, macOS, and Linux. It is based on the original work of [Gilles Vollant](http://www.winimage.com/zLibDll/minizip.html) that has been contributed to by many people over the years.
+This library is a refactoring of the minizip contribution found in the zlib distribution that is supported on Windows, macOS, and Linux. The motivation for this work has been the inclusion of advanced features, improvements in code maintainability and readability, and the reduction of duplicate code. It is based on the original work of [Gilles Vollant](http://www.winimage.com/zLibDll/minizip.html) that has been contributed to by many people over the years.
 
 Dev: ![Dev Branch Status](https://travis-ci.org/nmoinvaz/minizip.svg?branch=dev)
 Master: ![Master Branch Status](https://travis-ci.org/nmoinvaz/minizip.svg?branch=master)
@@ -20,8 +20,7 @@ cmake --build .
 
 | File(s) | Description | Required |
 |:- |:-|:-:|
-| miniunz.c | Sample unzip application | No |
-| minizip.c | Sample zip application | No | 
+| minizip.c | Sample application | No |
 | mz_compat.\* | Minizip 1.0 compatibility layer | No |
 | mz.h | Error codes and flags | Yes |
 | mz_os\* | OS specific helper functions | Encryption |
@@ -36,8 +35,7 @@ cmake --build .
 | mz_strm_posix.\* | File stream using Posix functions | Non-windows systems |
 | mz_strm_win32.\* | File stream using Win32 API functions | Windows systems |
 | mz_strm_zlib.\* | Deflate stream using zlib | Yes |
-| mz_unzip.\* | Unzip functionality | Unzipping |
-| mz_zip.\* | Zip functionality | Zipping |
+| mz_zip.\* | Zip functionality | Yes |
 
 ## Features
 
@@ -58,7 +56,7 @@ mz_stream_mem_create(&mem_stream);
 mz_stream_mem_set_buffer(mem_stream, zip_buffer, zip_buffer_size);
 mz_stream_open(mem_stream, NULL, MZ_STREAM_MODE_READ);
 
-void *unz_handle = mz_unzip_open(mem_stream);
+void *zip_handle = mz_zip_open(mem_stream, MZ_STREAM_MODE_READ);
 // do unzip operations
 
 mz_stream_mem_delete(&mem_stream);
@@ -70,11 +68,10 @@ To create a zip file in memory first create a growable memory stream and pass it
 void *mem_stream = NULL;
 
 mz_stream_mem_create(&mem_stream);
-mz_stream_mem_set_grow(mem_stream, 1);
 mz_stream_mem_set_grow_size(mem_stream, (128 * 1024));
 mz_stream_open(mem_stream, NULL, MZ_STREAM_MODE_CREATE);
 
-void *zip_handle = mz_zip_open(0, 0, mem_stream);
+void *zip_handle = mz_zip_open(mem_stream, MZ_STREAM_MODE_WRITE);
 // do unzip operations
 
 mz_stream_mem_delete(&mem_stream);
@@ -94,7 +91,7 @@ mz_stream_buffered_create(&buf_stream);
 mz_stream_buffered_open(buf_stream, NULL, MZ_STREAM_MODE_READ);
 mz_stream_buffered_set_base(buf_stream, stream);
 
-void *unz_handle = mz_unzip_open(buf_stream);
+void *zip_handle = mz_zip_open(buf_stream, MZ_STREAM_MODE_READ);
 ```
 
 #### Disk Splitting Stream
@@ -114,7 +111,7 @@ mz_stream_set_base(split_stream, stream);
 
 mz_stream_open(split_stream, path..
 
-handle = mz_unzip/zip_open(split_stream);
+handle = mz_zip_open(split_stream, MZ_STREAM_MODE_WRITE);
 ```
 
 The central directory is the only data stored in the .zip and doesn't follow disk size restrictions.
@@ -141,7 +138,7 @@ When unzipping it will automatically determine when in needs to cross disk bound
 + Requires [Brian Gladman's](https://github.com/BrianGladman/aes) AES library
 
 When zipping with a password it will always use AES 256-bit encryption.
-When unzipping it will use AES decryption only if necessary. Does not support central directory or local file header encryption since it is not supported outside of PKZIP. For a more secure method it is best to just encrypt the zip post-process.
+When unzipping it will use AES decryption only if necessary.
 
 #### Disabling All Encryption
 
@@ -155,3 +152,8 @@ cmake . -DUSE_CRYPT=OFF
 ### Windows RT
 
 + Requires ``#define MZ_USING_WINRT_API``
+
+## Limitations
+
++ Archives are required to have a central directory with correct header values for unzipping.
++ Central directory encryption is not supported due to licensing restrictions mentioned by PKWARE in their zip appnote.

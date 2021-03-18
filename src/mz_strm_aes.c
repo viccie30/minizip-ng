@@ -1,5 +1,5 @@
 /* mz_strm_aes.c -- Stream for WinZip AES encryption
-   Version 2.0.1, October 16th, 2017
+   Version 2.1.0, October 20th, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -48,15 +48,15 @@ mz_stream_vtbl mz_stream_aes_vtbl = {
 
 typedef struct mz_stream_aes_s {
     mz_stream      stream;
-    fcrypt_ctx     crypt_ctx;
-    int16_t        mode;
+    int32_t        mode;
+    int32_t        error;
     int16_t        initialized;
-    int16_t        error;
-    int16_t        encryption_mode;
-    const char     *password;
+    uint8_t        buffer[INT16_MAX];
     int64_t        total_in;
     int64_t        total_out;
-    uint8_t        buffer[INT16_MAX];
+    fcrypt_ctx     crypt_ctx;
+    int16_t        encryption_mode;
+    const char     *password;
 } mz_stream_aes;
 
 /***************************************************************************/
@@ -234,7 +234,7 @@ int32_t mz_stream_aes_get_prop_int64(void *stream, int32_t prop, int64_t *value)
         *value = aes->total_out;
         return MZ_OK;
     case MZ_STREAM_PROP_HEADER_SIZE:
-        *value = MZ_AES_MAXSALTLENGTH + MZ_AES_PWVERIFYSIZE;
+        *value = SALT_LENGTH(aes->encryption_mode) + MZ_AES_PWVERIFYSIZE;
         return MZ_OK;
     case MZ_STREAM_PROP_FOOTER_SIZE:
         *value = MZ_AES_AUTHCODESIZE;
@@ -252,7 +252,7 @@ void *mz_stream_aes_create(void **stream)
     {
         memset(aes, 0, sizeof(mz_stream_aes));
         aes->stream.vtbl = &mz_stream_aes_vtbl;
-        aes->encryption_mode = MZ_AES_ENCRYPTIONMODE;
+        aes->encryption_mode = MZ_AES_ENCRYPTION_MODE_256;
     }
     if (stream != NULL)
         *stream = aes;
@@ -269,4 +269,9 @@ void mz_stream_aes_delete(void **stream)
     if (aes != NULL)
         free(aes);
     *stream = NULL;
+}
+
+void *mz_stream_aes_get_interface(void)
+{
+    return (void *)&mz_stream_aes_vtbl;
 }

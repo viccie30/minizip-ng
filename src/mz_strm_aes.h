@@ -1,5 +1,5 @@
 /* mz_strm_aes.h -- Stream for WinZIP AES encryption
-   Version 2.0.1, October 16th, 2017
+   Version 2.1.0, October 20th, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -17,12 +17,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/***************************************************************************/
-
-#define MZ_AES_METHOD          (99)
-#define MZ_AES_VERSION         (0x0001)
-#define MZ_AES_ENCRYPTIONMODE  (0x03)
 
 /***************************************************************************/
 

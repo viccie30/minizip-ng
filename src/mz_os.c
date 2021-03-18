@@ -1,5 +1,5 @@
 /* mz_os.c -- System functions
-   Version 2.0.1, October 16th, 2017
+   Version 2.1.0, October 20th, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -24,20 +24,18 @@
 
 int32_t mz_file_exists(const char *path)
 {
+    int32_t err = MZ_OK;
     void *stream = NULL;
-    int opened = 0;
 
     mz_stream_os_create(&stream);
 
-    if (mz_stream_os_open(stream, path, MZ_STREAM_MODE_READ) == MZ_OK)
-    {
+    err = mz_stream_os_open(stream, path, MZ_STREAM_MODE_READ);
+    if (err == MZ_OK)
         mz_stream_os_close(stream);
-        opened = 1;
-    }
 
     mz_stream_os_delete(&stream);
 
-    return opened;
+    return err;
 }
 
 int64_t mz_file_get_size(const char *path)
@@ -59,9 +57,9 @@ int64_t mz_file_get_size(const char *path)
     return size;
 }
 
-int16_t mz_make_dir(const char *path)
+int32_t mz_make_dir(const char *path)
 {
-    int16_t err = MZ_OK;
+    int32_t err = MZ_OK;
     int16_t len = 0;
     char *current_dir = NULL;
     char *match = NULL;
@@ -109,7 +107,7 @@ int16_t mz_make_dir(const char *path)
 
 /***************************************************************************/
 
-int mz_invalid_date(const struct tm *ptm)
+int32_t mz_invalid_date(const struct tm *ptm)
 {
 #define datevalue_in_range(min, max, value) ((min) <= (value) && (value) <= (max))
     return (!datevalue_in_range(0, 207, ptm->tm_year) ||
@@ -141,7 +139,7 @@ int32_t mz_dosdate_to_tm(uint64_t dos_date, struct tm *ptm)
 
     if (mz_invalid_date(ptm))
     {
-        // Invalid date stored, so don't return it.
+        // Invalid date stored, so don't return it
         memset(ptm, 0, sizeof(struct tm));
         return -1;
     }

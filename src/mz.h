@@ -1,5 +1,5 @@
 /* mz.h -- Errors codes, zip flags and magic
-   Version 2.0.1, October 16th, 2017
+   Version 2.1.0, October 20th, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -39,6 +39,7 @@ extern "C" {
 #define MZ_COMPRESS_METHOD_DEFLATE      (8)
 #define MZ_COMPRESS_METHOD_BZIP2        (12)
 #define MZ_COMPRESS_METHOD_LZMA         (14)
+#define MZ_COMPRESS_METHOD_AES          (99)
 
 // MZ_COMPRESS_OPTIONS
 #define MZ_COMPRESS_LEVEL_DEFAULT       (-1)
@@ -56,17 +57,14 @@ extern "C" {
                                          MZ_ZIP_FLAG_DEFLATE_MAX)
 #define MZ_ZIP_FLAG_DATA_DESCRIPTOR     (1 << 3)
 
-// MZ_ZIP_MAGIC
-#define MZ_ZIP_MAGIC_DISKHEADER         (0x08074b50)
-#define MZ_ZIP_MAGIC_LOCALHEADER        (0x04034b50)
-#define MZ_ZIP_MAGIC_CENTRALHEADER      (0x02014b50)
-#define MZ_ZIP_MAGIC_ENDHEADER          (0x06054b50)
-#define MZ_ZIP_MAGIC_ENDHEADER64        (0x06064b50)
-#define MZ_ZIP_MAGIC_ENDLOCHEADER64     (0x07064b50)
-#define MZ_ZIP_MAGIC_DATADESCRIPTOR     (0x08074b50)
+// MZ_AES
+#define MZ_AES_VERSION                  (1)
+#define MZ_AES_ENCRYPTION_MODE_128      (0x01)
+#define MZ_AES_ENCRYPTION_MODE_192      (0x02)
+#define MZ_AES_ENCRYPTION_MODE_256      (0x03)
 
 // MZ_VERSION
-#define MZ_VERSION                      ("2.0.1")
+#define MZ_VERSION                      ("2.1.0")
 
 /***************************************************************************/
 

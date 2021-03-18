@@ -1,5 +1,5 @@
 /* mz_os_win32.h -- System functions for Windows
-   Version 2.0.1, October 16th, 2017
+   Version 2.1.0, October 20th, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -32,9 +32,9 @@ typedef void* DIR;
 /***************************************************************************/
 
 int32_t mz_win32_rand(uint8_t *buf, int32_t size);
-int16_t mz_win32_get_file_date(const char *path, uint32_t *dos_date);
-int16_t mz_win32_set_file_date(const char *path, uint32_t dos_date);
-int16_t mz_win32_make_dir(const char *path);
+int32_t mz_win32_get_file_date(const char *path, uint32_t *dos_date);
+int32_t mz_win32_set_file_date(const char *path, uint32_t dos_date);
+int32_t mz_win32_make_dir(const char *path);
 DIR*    mz_win32_open_dir(const char *path);
 struct 
 dirent* mz_win32_read_dir(DIR *dir);

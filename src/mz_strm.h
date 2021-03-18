@@ -1,5 +1,5 @@
 /* mz_strm.h -- Stream interface
-   Version 2.0.1, October 16th, 2017
+   Version 2.1.0, October 20th, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -40,9 +40,6 @@ extern "C" {
 #define MZ_STREAM_PROP_DISK_SIZE            (7)
 #define MZ_STREAM_PROP_DISK_NUMBER          (8)
 #define MZ_STREAM_PROP_COMPRESS_LEVEL       (9)
-#define MZ_STREAM_PROP_COMPRESS_STRATEGY    (10)
-#define MZ_STREAM_PROP_COMPRESS_MEM_LEVEL   (11)
-#define MZ_STREAM_PROP_COMPRESS_WINDOW_BITS (12)
 
 /***************************************************************************/
 
@@ -110,9 +107,6 @@ int32_t mz_stream_set_prop_int64(void *stream, int32_t prop, int64_t value);
 
 void*   mz_stream_create(void **stream, mz_stream_vtbl *vtbl);
 void    mz_stream_delete(void **stream);
-
-void*   mz_stream_passthru_create(void **stream);
-void    mz_stream_passthru_delete(void **stream);
 
 /***************************************************************************/
 

@@ -1,5 +1,5 @@
 /* mz_strm.c -- Stream interface
-   Version 2.0.1, October 16th, 2017
+   Version 2.1.0, October 20th, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -138,12 +138,12 @@ int32_t mz_stream_write(void *stream, const void *buf, int32_t size)
     return strm->vtbl->write(strm, buf, size);
 }
 
-static int32_t mz_stream_write_value(void *stream, uint64_t value, uint32_t len)
+static int32_t mz_stream_write_value(void *stream, uint64_t value, int32_t len)
 {
     uint8_t buf[8];
-    uint32_t n = 0;
+    int32_t n = 0;
 
-    for (n = 0; n < len; n++)
+    for (n = 0; n < len; n += 1)
     {
         buf[n] = (uint8_t)(value & 0xff);
         value >>= 8;
@@ -152,7 +152,7 @@ static int32_t mz_stream_write_value(void *stream, uint64_t value, uint32_t len)
     if (value != 0)
     {
         // Data overflow - hack for ZIP64 (X Roche)
-        for (n = 0; n < len; n++)
+        for (n = 0; n < len; n += 1)
             buf[n] = 0xff;
     }
 
@@ -284,125 +284,5 @@ void mz_stream_delete(void **stream)
     strm = (mz_stream *)*stream;
     if (strm != NULL && strm->vtbl != NULL && strm->vtbl->delete != NULL)
         strm->vtbl->delete(stream);
-    *stream = NULL;
-}
-
-/***************************************************************************/
-
-typedef struct mz_stream_passthru_s {
-    mz_stream   stream;
-    int64_t     total_in;
-    int64_t     total_out;
-} mz_stream_passthru;
-
-/***************************************************************************/
-
-int32_t mz_stream_passthru_open(void *stream, const char *path, int32_t mode)
-{
-    return MZ_OK;
-}
-
-int32_t mz_stream_passthru_is_open(void *stream)
-{
-    mz_stream_passthru *passthru = (mz_stream_passthru *)stream;
-    return mz_stream_is_open(passthru->stream.base);
-}
-
-int32_t mz_stream_passthru_read(void *stream, void *buf, int32_t size)
-{
-    mz_stream_passthru *passthru = (mz_stream_passthru *)stream;
-    int32_t read = mz_stream_read(passthru->stream.base, buf, size);
-    if (read > 0)
-        passthru->total_in += read;
-    return read;
-}
-
-int32_t mz_stream_passthru_write(void *stream, const void *buf, int32_t size)
-{
-    mz_stream_passthru *passthru = (mz_stream_passthru *)stream;
-    int32_t written = mz_stream_write(passthru->stream.base, buf, size);
-    if (written > 0)
-        passthru->total_out += written;
-    return written;
-}
-
-int64_t mz_stream_passthru_tell(void *stream)
-{
-    mz_stream_passthru *passthru = (mz_stream_passthru *)stream;
-    return mz_stream_tell(passthru->stream.base);
-}
-
-int32_t mz_stream_passthru_seek(void *stream, int64_t offset, int32_t origin)
-{
-    mz_stream_passthru *passthru = (mz_stream_passthru *)stream;
-    return mz_stream_seek(passthru->stream.base, offset, origin);
-}
-
-int32_t mz_stream_passthru_close(void *stream)
-{
-    return MZ_OK;
-}
-
-int32_t mz_stream_passthru_error(void *stream)
-{
-    mz_stream_passthru *passthru = (mz_stream_passthru *)stream;
-    return mz_stream_error(passthru->stream.base);
-}
-
-int32_t mz_stream_passthru_get_prop_int64(void *stream, int32_t prop, int64_t *value)
-{
-    mz_stream_passthru *passthru = (mz_stream_passthru *)stream;
-    return mz_stream_get_prop_int64(passthru->stream.base, prop, value);
-}
-
-int32_t mz_stream_passthru_set_prop_int64(void *stream, int32_t prop, int64_t value)
-{
-    mz_stream_passthru *passthru = (mz_stream_passthru *)stream;
-    return mz_stream_set_prop_int64(passthru->stream.base, prop, value);
-}
-
-/***************************************************************************/
-
-mz_stream_vtbl mz_stream_passthru_vtbl = {
-    mz_stream_passthru_open,
-    mz_stream_passthru_is_open,
-    mz_stream_passthru_read,
-    mz_stream_passthru_write,
-    mz_stream_passthru_tell,
-    mz_stream_passthru_seek,
-    mz_stream_passthru_close,
-    mz_stream_passthru_error,
-    mz_stream_passthru_create,
-    mz_stream_passthru_delete,
-    mz_stream_passthru_get_prop_int64,
-    mz_stream_passthru_set_prop_int64
-};
-
-/***************************************************************************/
-
-void *mz_stream_passthru_create(void **stream)
-{
-    mz_stream_passthru *passthru = NULL;
-
-    passthru = (mz_stream_passthru *)malloc(sizeof(mz_stream_passthru));
-    if (passthru != NULL)
-    {
-        memset(passthru, 0, sizeof(mz_stream_passthru));
-        passthru->stream.vtbl = &mz_stream_passthru_vtbl;
-    }
-    if (stream != NULL)
-        *stream = passthru;
-
-    return passthru;
-}
-
-void mz_stream_passthru_delete(void **stream)
-{
-    mz_stream_passthru *passthru = NULL;
-    if (stream == NULL)
-        return;
-    passthru = (mz_stream_passthru *)*stream;
-    if (passthru != NULL)
-        free(passthru);
     *stream = NULL;
 }
