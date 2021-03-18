@@ -1,5 +1,5 @@
 /* mz_strm_wzaes.h -- Stream for WinZIP AES encryption
-   Version 2.7.2, November 2, 2018
+   Version 2.7.3, November 4, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -19,9 +19,6 @@ extern "C" {
 #endif
 
 /***************************************************************************/
-
-int32_t mz_stream_wzaes_pbkdf2(uint8_t *password, int32_t password_length, uint8_t *salt, 
-    int32_t salt_length, int32_t iteration_count, uint8_t *key, int32_t key_length);
 
 int32_t mz_stream_wzaes_open(void *stream, const char *filename, int32_t mode);
 int32_t mz_stream_wzaes_is_open(void *stream);

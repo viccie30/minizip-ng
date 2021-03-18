@@ -1,5 +1,5 @@
 /* mz_os.c -- System functions
-   Version 2.7.2, November 2, 2018
+   Version 2.7.3, November 4, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -17,9 +17,9 @@
 #include <ctype.h>
 
 #include "mz.h"
+#include "mz_crypt.h"
 #include "mz_os.h"
 #include "mz_strm.h"
-#include "mz_strm_crc32.h"
 #include "mz_strm_os.h"
 
 /***************************************************************************/
@@ -291,7 +291,7 @@ int32_t mz_dir_make(const char *path)
 int32_t mz_file_get_crc(const char *path, uint32_t *result_crc)
 {
     void *stream = NULL;
-    void *crc32_stream = NULL;
+    uint32_t crc32 = 0;
     int32_t read = 0;
     int32_t err = MZ_OK;
     uint8_t buf[16384];
@@ -300,31 +300,26 @@ int32_t mz_file_get_crc(const char *path, uint32_t *result_crc)
 
     err = mz_stream_os_open(stream, path, MZ_OPEN_MODE_READ);
 
-    mz_stream_crc32_create(&crc32_stream);
-    mz_stream_crc32_open(crc32_stream, NULL, MZ_OPEN_MODE_READ);
-
-    mz_stream_set_base(crc32_stream, stream);
-
     if (err == MZ_OK)
     {
         do
         {
-            read = mz_stream_crc32_read(crc32_stream, buf, sizeof(buf));
+            read = mz_stream_os_read(stream, buf, sizeof(buf));
 
             if (read < 0)
             {
                 err = read;
                 break;
             }
+
+            crc32 = mz_crypt_crc32_update(crc32, buf, read);
         }
         while ((err == MZ_OK) && (read > 0));
 
         mz_stream_os_close(stream);
     }
 
-    mz_stream_crc32_close(crc32_stream);
-    *result_crc = mz_stream_crc32_get_value(crc32_stream);
-    mz_stream_crc32_delete(&crc32_stream);
+    *result_crc = crc32;
 
     mz_stream_os_delete(&stream);
 
