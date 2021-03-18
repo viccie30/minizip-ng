@@ -1,5 +1,5 @@
 /* mz_zip.h -- Zip manipulation
-   Version 2.7.4, November 6, 2018
+   Version 2.7.5, November 13, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -89,11 +89,14 @@ int32_t mz_zip_get_version_madeby(void *handle, uint16_t *version_madeby);
 int32_t mz_zip_set_version_madeby(void *handle, uint16_t version_madeby);
 // Set the version made by used for writing zip file
 
+int32_t mz_zip_set_recover(void *handle, uint8_t recover);
+// Set the ability to recover the central dir by reading local file headers
+
 int32_t mz_zip_get_stream(void *handle, void **stream);
 // Get a pointer to the stream used to open
 
-int32_t mz_zip_set_cd_stream(void *handle, int64_t cd_start_pos, void *cd_stream);
-// Sets the stream to use for reading the central dir
+int32_t mz_zip_set_cd_start_pos(void *handle, int64_t cd_start_pos);
+// Sets the start position to use for reading the central dir
 
 int32_t mz_zip_get_cd_mem_stream(void *handle, void **cd_mem_stream);
 // Get a pointer to the stream used to store the central dir in memory
@@ -142,8 +145,11 @@ int32_t mz_zip_set_number_entry(void *handle, uint64_t number_entry);
 int32_t mz_zip_get_number_entry(void *handle, uint64_t *number_entry);
 // Get the total number of entries
 
+int32_t mz_zip_set_disk_number_with_cd(void *handle, uint32_t disk_number_with_cd);
+// Sets the disk number containing the central directory record
+
 int32_t mz_zip_get_disk_number_with_cd(void *handle, uint32_t *disk_number_with_cd);
-// Get the the disk number containing the central directory record
+// Get the disk number containing the central directory record
 
 int64_t mz_zip_get_entry(void *handle);
 // Return offset of the current entry in the zip file
@@ -188,7 +194,7 @@ int32_t mz_zip_extrafield_find(void *stream, uint16_t type, uint16_t *length);
 int32_t mz_zip_extrafield_read(void *stream, uint16_t *type, uint16_t *length);
 // Reads an extrafield header from a stream
 
-int32_t mz_zip_extrafield_write(void *stream, uint32_t type, uint16_t length);
+int32_t mz_zip_extrafield_write(void *stream, uint16_t type, uint16_t length);
 // Writes an extrafield header to a stream
 
 /***************************************************************************/

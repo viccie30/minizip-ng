@@ -1,5 +1,5 @@
 /* mz_strm_win32.c -- Stream for filesystem access for windows
-   Version 2.7.4, November 6, 2018
+   Version 2.7.5, November 13, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -67,6 +67,14 @@ typedef struct mz_stream_win32_s
 
 /***************************************************************************/
 
+#if 0
+#  define mz_stream_os_print printf
+#else
+#  define mz_stream_os_print(fmt,...)
+#endif
+
+/***************************************************************************/
+
 int32_t mz_stream_os_open(void *stream, const char *path, int32_t mode)
 {
     mz_stream_win32 *win32 = (mz_stream_win32 *)stream;
@@ -75,7 +83,6 @@ int32_t mz_stream_os_open(void *stream, const char *path, int32_t mode)
     uint32_t share_mode = FILE_SHARE_READ;
     uint32_t flags_attribs = FILE_ATTRIBUTE_NORMAL;
     wchar_t *path_wide = NULL;
-    uint32_t path_wide_size = 0;
 
 
     if (path == NULL)
@@ -103,6 +110,8 @@ int32_t mz_stream_os_open(void *stream, const char *path, int32_t mode)
     {
         return MZ_PARAM_ERROR;
     }
+
+    mz_stream_os_print("Win32 - Open - %s (mode %d)\n", path);
 
     path_wide = mz_os_unicode_string_create(path, MZ_ENCODING_UTF8);
     if (path_wide == NULL)
@@ -153,6 +162,8 @@ int32_t mz_stream_os_read(void *stream, void *buf, int32_t size)
             win32->error = 0;
     }
 
+    mz_stream_os_print("Win32 - Read - %d\n", read);
+
     return read;
 }
 
@@ -170,6 +181,8 @@ int32_t mz_stream_os_write(void *stream, const void *buf, int32_t size)
         if (win32->error == ERROR_HANDLE_EOF)
             win32->error = 0;
     }
+
+    mz_stream_os_print("Win32 - Write - %d\n", written);
 
     return written;
 }
@@ -212,6 +225,8 @@ int64_t mz_stream_os_tell(void *stream)
     if (mz_stream_os_seekinternal(win32->handle, large_pos, &large_pos, FILE_CURRENT) != MZ_OK)
         win32->error = GetLastError();
 
+    mz_stream_os_print("Win32 - Tell - %lld\n", large_pos.QuadPart);
+
     return large_pos.QuadPart;
 }
 
@@ -241,6 +256,8 @@ int32_t mz_stream_os_seek(void *stream, int64_t offset, int32_t origin)
             return MZ_SEEK_ERROR;
     }
 
+    mz_stream_os_print("Win32 - Seek - %lld (origin %d)\n", offset, origin);
+
     large_pos.QuadPart = offset;
 
     err = mz_stream_os_seekinternal(win32->handle, large_pos, NULL, move_method);
@@ -259,6 +276,7 @@ int32_t mz_stream_os_close(void *stream)
 
     if (win32->handle != NULL)
         CloseHandle(win32->handle);
+    mz_stream_os_print("Win32 - Close\n");
     win32->handle = NULL;
     return MZ_OK;
 }

@@ -1,5 +1,5 @@
 /* mz_zip_rw.h -- Zip reader/writer
-   Version 2.7.4, November 6, 2018
+   Version 2.7.5, November 13, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -124,6 +124,9 @@ void    mz_zip_reader_set_raw(void *handle, uint8_t raw);
 int32_t mz_zip_reader_get_raw(void *handle, uint8_t *raw);
 // Gets whether or not it should save the entry raw
 
+int32_t mz_zip_reader_get_comment(void *handle, const char **comment);
+// Gets the comment for the central directory
+
 void    mz_zip_reader_set_encoding(void *handle, int32_t encoding);
 // Sets whether or not it should support cp437 in zip file names
 
@@ -226,6 +229,9 @@ int32_t mz_zip_writer_copy_from_reader(void *handle, void *reader);
 
 void    mz_zip_writer_set_password(void *handle, const char *password);
 // Password to use for encrypting files in the zip
+
+void    mz_zip_writer_set_comment(void *handle, const char *comment);
+// Comment to use for the archive
 
 void    mz_zip_writer_set_raw(void *handle, uint8_t raw);
 // Sets whether or not we should write the entry raw
