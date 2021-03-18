@@ -1,5 +1,5 @@
 /* mz_zip_rw.c -- Zip reader/writer
-   Version 2.5.3, September 18, 2018
+   Version 2.5.4, September 30, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -338,11 +338,11 @@ int32_t mz_zip_reader_entry_close(void *handle)
     return err;
 }
 
-int32_t mz_zip_reader_entry_read(void *handle, const void *buf, int32_t len)
+int32_t mz_zip_reader_entry_read(void *handle, void *buf, int32_t len)
 {
     mz_zip_reader *reader = (mz_zip_reader *)handle;
     int32_t read = 0;
-    read = mz_zip_entry_read(reader->zip_handle, (void *)buf, len);
+    read = mz_zip_entry_read(reader->zip_handle, buf, len);
     return read;
 }
 
@@ -825,7 +825,7 @@ int32_t mz_zip_writer_open_file(void *handle, const char *path, int64_t disk_siz
     else
     {
         if (writer->overwrite_cb != NULL)
-            err_cb = writer->overwrite_cb(handle, writer->overwrite_cb, path);
+            err_cb = writer->overwrite_cb(handle, writer->overwrite_userdata, path);
 
         if (err_cb == MZ_INTERNAL_ERROR)
             return err;

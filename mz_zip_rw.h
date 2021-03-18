@@ -1,5 +1,5 @@
 /* mz_zip_rw.h -- Zip reader/writer
-   Version 2.5.3, September 18, 2018
+   Version 2.5.4, September 30, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -64,7 +64,7 @@ int32_t mz_zip_reader_entry_open(void *handle);
 int32_t mz_zip_reader_entry_close(void *handle);
 // Closes an entry
 
-int32_t mz_zip_reader_entry_read(void *handle, const void *buf, int32_t len);
+int32_t mz_zip_reader_entry_read(void *handle, void *buf, int32_t len);
 // Reads and entry after being opened
 
 int32_t mz_zip_reader_entry_get_info(void *handle, mz_zip_file **file_info);
