@@ -1,4 +1,4 @@
-# Minizip 2.3.5
+# Minizip 2.3.6
 
 This library is a refactoring of the minizip contribution found in the zlib distribution and is supported on Windows, macOS, and Linux. The motivation for this work has been the inclusion of advanced features, improvements in code maintainability and readability, and the reduction of duplicate code. It is based on the original work of [Gilles Vollant](http://www.winimage.com/zLibDll/minizip.html) that has been contributed to by many people over the years.
 
@@ -67,6 +67,7 @@ cmake . -DZLIB_LIBRARY=lib\zlib\release\zlibstatic.lib -DZLIB_INCLUDE_DIR=lib\zl
 | mz_strm_aes.\* | WinZIP AES stream | No |
 | mz_strm_buf.\* | Buffered stream | No |
 | mz_strm_bzip.\* | BZIP2 stream using libbzip2 | No |
+| mz_strm_crc32.\* | CRC32 stream | Yes |
 | mz_strm_lzma.\* | LZMA stream using liblzma | zlib or liblzma |
 | mz_strm_mem.\* | Memory stream | Yes |
 | mz_strm_split.\* | Disk splitting stream | No |

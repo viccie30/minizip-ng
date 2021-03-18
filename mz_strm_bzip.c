@@ -1,5 +1,5 @@
 /* mz_strm_bzip.c -- Stream for bzip inflate/deflate
-   Version 2.3.5, July 9, 2018
+   Version 2.3.6, July 11, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -305,11 +305,8 @@ int32_t mz_stream_bzip_close(void *stream)
 #ifdef MZ_ZIP_DECOMPRESS_ONLY
         return MZ_SUPPORT_ERROR;
 #else
-        if (bzip->total_in > 0)
-        {
-            mz_stream_bzip_compress(stream, BZ_FINISH);
-            mz_stream_bzip_flush(stream);
-        }
+        mz_stream_bzip_compress(stream, BZ_FINISH);
+        mz_stream_bzip_flush(stream);
 
         BZ2_bzCompressEnd(&bzip->bzstream);
 #endif
@@ -343,18 +340,20 @@ int32_t mz_stream_bzip_get_prop_int64(void *stream, int32_t prop, int64_t *value
     {
     case MZ_STREAM_PROP_TOTAL_IN:
         *value = bzip->total_in;
-        return MZ_OK;
+        break;
     case MZ_STREAM_PROP_TOTAL_IN_MAX:
         *value = bzip->max_total_in;
-        return MZ_OK;
+        break;
     case MZ_STREAM_PROP_TOTAL_OUT:
         *value = bzip->total_out;
-        return MZ_OK;
+        break;
     case MZ_STREAM_PROP_HEADER_SIZE:
         *value = 0;
-        return MZ_OK;
+        break;
+    default:
+        return MZ_EXIST_ERROR;
     }
-    return MZ_EXIST_ERROR;
+    return MZ_OK;
 }
 
 int32_t mz_stream_bzip_set_prop_int64(void *stream, int32_t prop, int64_t value)

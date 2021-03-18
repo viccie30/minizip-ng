@@ -32,7 +32,7 @@ set(INSTALL_MAN_DIR ${CMAKE_INSTALL_MANDIR} CACHE PATH "Installation directory f
 set(INSTALL_PKGCONFIG_DIR ${CMAKE_INSTALL_LIBDIR}/pkgconfig CACHE PATH "Installation directory for pkgconfig (.pc) files")
 set(INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/minizip CACHE PATH "Installation directory for cmake files.")
 
-set(VERSION "2.3.5")
+set(VERSION "2.3.6")
 
 # Set cmake debug postfix to d
 set(CMAKE_DEBUG_POSTFIX "d")
@@ -57,6 +57,7 @@ set(MINIZIP_SRC
     mz_compat.c
     mz_strm.c
     mz_strm_buf.c
+    mz_strm_crc32.c
     mz_strm_mem.c
     mz_strm_posix.c
     mz_strm_split.c
@@ -68,6 +69,7 @@ set(MINIZIP_PUBLIC_HEADERS
     mz_compat.h
     mz_strm.h
     mz_strm_buf.h
+    mz_strm_crc32.h
     mz_strm_mem.h
     mz_strm_posix.h
     mz_strm_split.h

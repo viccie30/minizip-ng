@@ -1,5 +1,5 @@
 /* zip.c -- Zip manipulation
-   Version 2.3.5, July 9, 2018
+   Version 2.3.6, July 11, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -30,16 +30,17 @@
 #ifdef HAVE_BZIP2
 #  include "mz_strm_bzip.h"
 #endif
+#include "mz_strm_crc32.h"
 #ifdef HAVE_LZMA
 #  include "mz_strm_lzma.h"
 #endif
+#include "mz_strm_mem.h"
 #ifdef HAVE_PKCRYPT
 #  include "mz_strm_pkcrypt.h"
 #endif
 #ifdef HAVE_ZLIB
 #  include "mz_strm_zlib.h"
 #endif
-#include "mz_strm_mem.h"
 
 #include "mz_zip.h"
 
@@ -1207,16 +1208,6 @@ static int32_t mz_zip_entry_open_int(void *handle, int16_t compression_method, i
     if (err == MZ_OK)
     {
         mz_stream_crc32_create(&zip->crc32_stream);
-#ifdef HAVE_ZLIB
-        mz_stream_crc32_set_update_func(zip->crc32_stream,
-            (mz_stream_crc32_update)mz_stream_zlib_get_crc32_update());
-#elif defined(HAVE_LZMA)
-        mz_stream_crc32_set_update_func(zip->crc32_stream,
-            (mz_stream_crc32_update)mz_stream_lzma_get_crc32_update());
-#else
-        #error ZLIB or LZMA required for CRC32
-#endif
-
         mz_stream_set_base(zip->crc32_stream, zip->compress_stream);
 
         err = mz_stream_open(zip->crc32_stream, NULL, zip->open_mode);
@@ -1355,8 +1346,14 @@ extern int32_t mz_zip_entry_read(void *handle, void *buf, uint32_t len)
         return MZ_PARAM_ERROR;
     if (UINT_MAX == UINT16_MAX && len > UINT16_MAX) // Zlib limitation
         return MZ_PARAM_ERROR;
-    if (len == 0 || zip->file_info.uncompressed_size == 0)
+    if (len == 0)
+        return MZ_PARAM_ERROR;
+
+    if (zip->file_info.compressed_size == 0)
         return 0;
+
+    // Read entire entry even if uncompressed_size = 0, otherwise
+    // aes encryption validation will fail if compressed_size > 0
     read = mz_stream_read(zip->crc32_stream, buf, len);
     return read;
 }

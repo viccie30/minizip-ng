@@ -1,5 +1,5 @@
 /* mz_strm_aes.c -- Stream for WinZip AES encryption
-   Version 2.3.5, July 9, 2018
+   Version 2.3.6, July 11, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -304,21 +304,23 @@ int32_t mz_stream_aes_get_prop_int64(void *stream, int32_t prop, int64_t *value)
     {
     case MZ_STREAM_PROP_TOTAL_IN:
         *value = aes->total_in;
-        return MZ_OK;
+        break;
     case MZ_STREAM_PROP_TOTAL_OUT:
         *value = aes->total_out;
-        return MZ_OK;
+        break;
     case MZ_STREAM_PROP_TOTAL_IN_MAX:
         *value = aes->max_total_in;
-        return MZ_OK;
+        break;
     case MZ_STREAM_PROP_HEADER_SIZE:
         *value = MZ_AES_SALT_LENGTH(aes->encryption_mode) + MZ_AES_PW_VERIFY_SIZE;
-        return MZ_OK;
+        break;
     case MZ_STREAM_PROP_FOOTER_SIZE:
         *value = MZ_AES_AUTHCODE_SIZE;
-        return MZ_OK;
+        break;
+    default:
+        return MZ_EXIST_ERROR;
     }
-    return MZ_EXIST_ERROR;
+    return MZ_OK;
 }
 
 int32_t mz_stream_aes_set_prop_int64(void *stream, int32_t prop, int64_t value)
@@ -328,9 +330,11 @@ int32_t mz_stream_aes_set_prop_int64(void *stream, int32_t prop, int64_t value)
     {
     case MZ_STREAM_PROP_TOTAL_IN_MAX:
         aes->max_total_in = value;
-        return MZ_OK;
+        break;
+    default:
+        return MZ_EXIST_ERROR;
     }
-    return MZ_EXIST_ERROR;
+    return MZ_OK;
 }
 
 void *mz_stream_aes_create(void **stream)

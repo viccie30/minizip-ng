@@ -1,5 +1,5 @@
 /* mz_os.c -- System functions
-   Version 2.3.5, July 9, 2018
+   Version 2.3.6, July 11, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -18,12 +18,7 @@
 #include "mz.h"
 #include "mz_os.h"
 #include "mz_strm.h"
-#ifdef HAVE_LZMA
-#  include "mz_strm_lzma.h"
-#endif
-#ifdef HAVE_ZLIB
-#  include "mz_strm_zlib.h"
-#endif
+#include "mz_strm_crc32.h"
 
 /***************************************************************************/
 
@@ -253,16 +248,6 @@ int32_t mz_get_file_crc(const char *path, uint32_t *result_crc)
     err = mz_stream_os_open(stream, path, MZ_OPEN_MODE_READ);
 
     mz_stream_crc32_create(&crc32_stream);
-#ifdef HAVE_ZLIB
-    mz_stream_crc32_set_update_func(crc32_stream,
-        (mz_stream_crc32_update)mz_stream_zlib_get_crc32_update());
-#elif defined(HAVE_LZMA)
-    mz_stream_crc32_set_update_func(crc32_stream,
-        (mz_stream_crc32_update)mz_stream_lzma_get_crc32_update());
-#else
-    #error ZLIB or LZMA required for CRC32
-#endif
-
     mz_stream_crc32_open(crc32_stream, NULL, MZ_OPEN_MODE_READ);
 
     mz_stream_set_base(crc32_stream, stream);

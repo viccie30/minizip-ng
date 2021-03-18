@@ -1,5 +1,5 @@
 /* mz_strm_split.c -- Stream for split files
-   Version 2.3.5, July 9, 2018
+   Version 2.3.6, July 11, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -338,15 +338,17 @@ int32_t mz_stream_split_get_prop_int64(void *stream, int32_t prop, int64_t *valu
     {
     case MZ_STREAM_PROP_TOTAL_OUT:
         *value = split->total_out;
-        return MZ_OK;
+        break;
     case MZ_STREAM_PROP_DISK_NUMBER:
         *value = split->number_disk;
-        return MZ_OK;
+        break;
     case MZ_STREAM_PROP_DISK_SIZE:
         *value = split->disk_size;
-        return MZ_OK;
+        break;
+    default:
+        return MZ_EXIST_ERROR;
     }
-    return MZ_EXIST_ERROR;
+    return MZ_OK;
 }
 
 int32_t mz_stream_split_set_prop_int64(void *stream, int32_t prop, int64_t value)
@@ -356,12 +358,14 @@ int32_t mz_stream_split_set_prop_int64(void *stream, int32_t prop, int64_t value
     {
     case MZ_STREAM_PROP_DISK_NUMBER:
         split->number_disk = (int32_t)value;
-        return MZ_OK;
+        break;
     case MZ_STREAM_PROP_DISK_SIZE:
         split->disk_size = value;
-        return MZ_OK;
+        break;
+    default:
+        return MZ_EXIST_ERROR;
     }
-    return MZ_EXIST_ERROR;
+    return MZ_OK;
 }
 
 void *mz_stream_split_create(void **stream)
