@@ -1,5 +1,5 @@
 /* mz_strm_crc32.c -- Stream for CRC32 hashing
-   Version 2.6.0, October 8, 2018
+   Version 2.7.0, October 28, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -70,7 +70,7 @@ int32_t mz_stream_crc32_is_open(void *stream)
 {
     mz_stream_crc32 *crc32 = (mz_stream_crc32 *)stream;
     if (crc32->initialized != 1)
-        return MZ_STREAM_ERROR;
+        return MZ_OPEN_ERROR;
     return MZ_OK;
 }
 
@@ -91,9 +91,12 @@ int32_t mz_stream_crc32_write(void *stream, const void *buf, int32_t size)
 {
     mz_stream_crc32 *crc32x = (mz_stream_crc32 *)stream;
     int32_t written = 0;
-    crc32x->value = crc32x->update(crc32x->value, buf, size);
     written = mz_stream_write(crc32x->stream.base, buf, size);
-    crc32x->total_out += written;
+    if (written > 0)
+    {
+        crc32x->value = crc32x->update(crc32x->value, buf, written);
+        crc32x->total_out += written;
+    }
     return written;
 }
 

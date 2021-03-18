@@ -1,5 +1,5 @@
 /* mz_os_win32.c -- System functions for Windows
-   Version 2.6.0, October 8, 2018
+   Version 2.7.0, October 28, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -17,14 +17,11 @@
 #include <errno.h>
 
 #include <windows.h>
-#if !defined(MZ_ZIP_NO_COMPRESSION) && !defined(MZ_ZIP_NO_ENCRYPTION)
-#  include <wincrypt.h>
-#endif
 
 #include "mz.h"
 
 #include "mz_os.h"
-#include "mz_os_win32.h"
+#include "mz_strm_os.h"
 
 /***************************************************************************/
 
@@ -45,22 +42,35 @@ typedef struct DIR_int_s {
 
 /***************************************************************************/
 
-#if !defined(MZ_ZIP_NO_COMPRESSION) && !defined(MZ_ZIP_NO_ENCRYPTION)
-int32_t mz_win32_rand(uint8_t *buf, int32_t size)
+wchar_t *mz_os_unicode_string_create(const char *string)
 {
-    HCRYPTPROV provider;
+    wchar_t *string_wide = NULL;
+    uint32_t string_wide_size = 0;
+
+    string_wide_size = MultiByteToWideChar(CP_UTF8, 0, string, -1, NULL, 0);
+    string_wide = (wchar_t *)MZ_ALLOC((string_wide_size + 1) * sizeof(wchar_t));
+    memset(string_wide, 0, sizeof(wchar_t) * (string_wide_size + 1));
+
+    MultiByteToWideChar(CP_UTF8, 0, string, -1, string_wide, string_wide_size);
+
+    return string_wide;
+}
+
+void mz_os_unicode_string_delete(wchar_t **string)
+{
+    if (string != NULL)
+    {
+        MZ_FREE(*string);
+        *string = NULL;
+    }
+}
+
+/***************************************************************************/
+
+int32_t mz_os_rand(uint8_t *buf, int32_t size)
+{
     unsigned __int64 pentium_tsc[1];
     int32_t len = 0;
-    int32_t result = 0;
-
-
-    if (CryptAcquireContext(&provider, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
-    {
-        result = CryptGenRandom(provider, size, buf);
-        CryptReleaseContext(provider, 0);
-        if (result)
-            return size;
-    }
 
     for (len = 0; len < (int)size; len += 1)
     {
@@ -71,43 +81,19 @@ int32_t mz_win32_rand(uint8_t *buf, int32_t size)
 
     return len;
 }
-#endif
 
-wchar_t *mz_win32_unicode_path_create(const char *path)
-{
-    wchar_t *path_wide = NULL;
-    uint32_t path_wide_size = 0;
-
-    path_wide_size = MultiByteToWideChar(CP_UTF8, 0, path, -1, NULL, 0);
-    path_wide = (wchar_t *)MZ_ALLOC((path_wide_size + 1) * sizeof(wchar_t));
-    memset(path_wide, 0, sizeof(wchar_t) * (path_wide_size + 1));
-
-    MultiByteToWideChar(CP_UTF8, 0, path, -1, path_wide, path_wide_size);
-
-    return path_wide;
-}
-
-void mz_win32_unicode_path_delete(wchar_t **path)
-{
-    if (path != NULL)
-    {
-        MZ_FREE(*path);
-        *path = NULL;
-    }
-}
-
-int32_t mz_win32_rename(const char *source_path, const char *target_path)
+int32_t mz_os_rename(const char *source_path, const char *target_path)
 {
     wchar_t *source_path_wide = NULL;
     wchar_t *target_path_wide = NULL;
     int32_t result = 0;
 
 
-    source_path_wide = mz_win32_unicode_path_create(source_path);
-    target_path_wide = mz_win32_unicode_path_create(target_path);
+    source_path_wide = mz_os_unicode_string_create(source_path);
+    target_path_wide = mz_os_unicode_string_create(target_path);
     result = MoveFileW(source_path_wide, target_path_wide);
-    mz_win32_unicode_path_delete(&source_path_wide);
-    mz_win32_unicode_path_delete(&target_path_wide);
+    mz_os_unicode_string_delete(&source_path_wide);
+    mz_os_unicode_string_delete(&target_path_wide);
 
     if (result == 0)
         return MZ_EXIST_ERROR;
@@ -115,15 +101,15 @@ int32_t mz_win32_rename(const char *source_path, const char *target_path)
     return MZ_OK;
 }
 
-int32_t mz_win32_delete(const char *path)
+int32_t mz_os_delete(const char *path)
 {
     wchar_t *path_wide = NULL;
     int32_t result = 0;
 
 
-    path_wide = mz_win32_unicode_path_create(path);
+    path_wide = mz_os_unicode_string_create(path);
     result = DeleteFileW(path_wide);
-    mz_win32_unicode_path_delete(&path_wide);
+    mz_os_unicode_string_delete(&path_wide);
 
     if (result == 0)
         return MZ_EXIST_ERROR;
@@ -131,15 +117,15 @@ int32_t mz_win32_delete(const char *path)
     return MZ_OK;
 }
 
-int32_t mz_win32_file_exists(const char *path)
+int32_t mz_os_file_exists(const char *path)
 {
     wchar_t *path_wide = NULL;
     DWORD attribs = 0;
 
 
-    path_wide = mz_win32_unicode_path_create(path);
+    path_wide = mz_os_unicode_string_create(path);
     attribs = GetFileAttributesW(path_wide);
-    mz_win32_unicode_path_delete(&path_wide);
+    mz_os_unicode_string_delete(&path_wide);
 
     if (attribs == 0xFFFFFFFF)
         return MZ_EXIST_ERROR;
@@ -147,20 +133,20 @@ int32_t mz_win32_file_exists(const char *path)
     return MZ_OK;
 }
 
-int64_t mz_win32_get_file_size(const char *path)
+int64_t mz_os_get_file_size(const char *path)
 {
     HANDLE handle = NULL;
     LARGE_INTEGER large_size;
     wchar_t *path_wide = NULL;
 
 
-    path_wide = mz_win32_unicode_path_create(path);
+    path_wide = mz_os_unicode_string_create(path);
 #ifdef MZ_WINRT_API
     handle = CreateFile2W(path_wide, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 #else
     handle = CreateFileW(path_wide, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 #endif
-    mz_win32_unicode_path_delete(&path_wide);
+    mz_os_unicode_string_delete(&path_wide);
 
     large_size.QuadPart = 0;
 
@@ -173,7 +159,7 @@ int64_t mz_win32_get_file_size(const char *path)
     return large_size.QuadPart;
 }
 
-static void mz_win32_file_to_unix_time(FILETIME file_time, time_t *unix_time)
+static void mz_os_file_to_unix_time(FILETIME file_time, time_t *unix_time)
 {
     uint64_t quad_file_time = 0;
     quad_file_time = file_time.dwLowDateTime;
@@ -181,7 +167,7 @@ static void mz_win32_file_to_unix_time(FILETIME file_time, time_t *unix_time)
     *unix_time = (time_t)((quad_file_time - 116444736000000000LL) / 10000000);
 }
 
-static void mz_win32_unix_to_file_time(time_t unix_time, FILETIME *file_time)
+static void mz_os_unix_to_file_time(time_t unix_time, FILETIME *file_time)
 {
     uint64_t quad_file_time = 0;
     quad_file_time = ((uint64_t)unix_time * 10000000) + 116444736000000000LL;
@@ -189,25 +175,25 @@ static void mz_win32_unix_to_file_time(time_t unix_time, FILETIME *file_time)
     file_time->dwLowDateTime = (uint32_t)(quad_file_time);
 }
 
-int32_t mz_win32_get_file_date(const char *path, time_t *modified_date, time_t *accessed_date, time_t *creation_date)
+int32_t mz_os_get_file_date(const char *path, time_t *modified_date, time_t *accessed_date, time_t *creation_date)
 {
     WIN32_FIND_DATAW ff32;
     HANDLE handle = NULL;
     wchar_t *path_wide = NULL;
     int32_t err = MZ_INTERNAL_ERROR;
 
-    path_wide = mz_win32_unicode_path_create(path);
+    path_wide = mz_os_unicode_string_create(path);
     handle = FindFirstFileW(path_wide, &ff32);
     MZ_FREE(path_wide);
 
     if (handle != INVALID_HANDLE_VALUE)
     {
         if (modified_date != NULL)
-            mz_win32_file_to_unix_time(ff32.ftLastWriteTime, modified_date);
+            mz_os_file_to_unix_time(ff32.ftLastWriteTime, modified_date);
         if (accessed_date != NULL)
-            mz_win32_file_to_unix_time(ff32.ftLastAccessTime, accessed_date);
+            mz_os_file_to_unix_time(ff32.ftLastAccessTime, accessed_date);
         if (creation_date != NULL)
-            mz_win32_file_to_unix_time(ff32.ftCreationTime, creation_date);
+            mz_os_file_to_unix_time(ff32.ftCreationTime, creation_date);
 
         FindClose(handle);
         err = MZ_OK;
@@ -216,7 +202,7 @@ int32_t mz_win32_get_file_date(const char *path, time_t *modified_date, time_t *
     return err;
 }
 
-int32_t mz_win32_set_file_date(const char *path, time_t modified_date, time_t accessed_date, time_t creation_date)
+int32_t mz_os_set_file_date(const char *path, time_t modified_date, time_t accessed_date, time_t creation_date)
 {
     HANDLE handle = NULL;
     FILETIME ftm_creation, ftm_accessed, ftm_modified;
@@ -224,24 +210,24 @@ int32_t mz_win32_set_file_date(const char *path, time_t modified_date, time_t ac
     int32_t err = MZ_OK;
 
 
-    path_wide = mz_win32_unicode_path_create(path);
+    path_wide = mz_os_unicode_string_create(path);
 #ifdef MZ_WINRT_API
     handle = CreateFile2W(path_wide, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 #else
     handle = CreateFileW(path_wide, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 #endif
-    mz_win32_unicode_path_delete(&path_wide);
+    mz_os_unicode_string_delete(&path_wide);
 
     if (handle != INVALID_HANDLE_VALUE)
     {
         GetFileTime(handle, &ftm_creation, &ftm_accessed, &ftm_modified);
 
         if (modified_date != 0)
-            mz_win32_unix_to_file_time(modified_date, &ftm_modified);
+            mz_os_unix_to_file_time(modified_date, &ftm_modified);
         if (accessed_date != 0)
-            mz_win32_unix_to_file_time(accessed_date, &ftm_accessed);
+            mz_os_unix_to_file_time(accessed_date, &ftm_accessed);
         if (creation_date != 0)
-            mz_win32_unix_to_file_time(creation_date, &ftm_creation);
+            mz_os_unix_to_file_time(creation_date, &ftm_creation);
 
         if (SetFileTime(handle, &ftm_creation, &ftm_accessed, &ftm_modified) == 0)
             err = MZ_INTERNAL_ERROR;
@@ -252,12 +238,12 @@ int32_t mz_win32_set_file_date(const char *path, time_t modified_date, time_t ac
     return err;
 }
 
-int32_t mz_win32_get_file_attribs(const char *path, uint32_t *attributes)
+int32_t mz_os_get_file_attribs(const char *path, uint32_t *attributes)
 {
     wchar_t *path_wide = NULL;
     int32_t err = MZ_OK;
 
-    path_wide = mz_win32_unicode_path_create(path);
+    path_wide = mz_os_unicode_string_create(path);
     *attributes = GetFileAttributesW(path_wide);
     MZ_FREE(path_wide);
 
@@ -267,12 +253,12 @@ int32_t mz_win32_get_file_attribs(const char *path, uint32_t *attributes)
     return err;
 }
 
-int32_t mz_win32_set_file_attribs(const char *path, uint32_t attributes)
+int32_t mz_os_set_file_attribs(const char *path, uint32_t attributes)
 {
     wchar_t *path_wide = NULL;
     int32_t err = MZ_OK;
 
-    path_wide = mz_win32_unicode_path_create(path);
+    path_wide = mz_os_unicode_string_create(path);
     if (SetFileAttributesW(path_wide, attributes) == 0)
         err = MZ_INTERNAL_ERROR;
     MZ_FREE(path_wide);
@@ -280,15 +266,15 @@ int32_t mz_win32_set_file_attribs(const char *path, uint32_t attributes)
     return err;
 }
 
-int32_t mz_win32_make_dir(const char *path)
+int32_t mz_os_make_dir(const char *path)
 {
     wchar_t *path_wide = NULL;
     int32_t err = 0;
 
 
-    path_wide = mz_win32_unicode_path_create(path);
+    path_wide = mz_os_unicode_string_create(path);
     err = _wmkdir(path_wide);
-    mz_win32_unicode_path_delete(&path_wide);
+    mz_os_unicode_string_delete(&path_wide);
 
     if (err != 0 && errno != EEXIST)
         return MZ_INTERNAL_ERROR;
@@ -296,7 +282,7 @@ int32_t mz_win32_make_dir(const char *path)
     return MZ_OK;
 }
 
-DIR *mz_win32_open_dir(const char *path)
+DIR *mz_os_open_dir(const char *path)
 {
     WIN32_FIND_DATAW find_data;
     DIR_int *dir_int = NULL;
@@ -309,9 +295,9 @@ DIR *mz_win32_open_dir(const char *path)
     mz_path_combine(fixed_path, path, sizeof(fixed_path));
     mz_path_combine(fixed_path, "*", sizeof(fixed_path));
 
-    path_wide = mz_win32_unicode_path_create(fixed_path);
+    path_wide = mz_os_unicode_string_create(fixed_path);
     handle = FindFirstFileW(path_wide, &find_data);
-    mz_win32_unicode_path_delete(&path_wide);
+    mz_os_unicode_string_delete(&path_wide);
 
     if (handle == INVALID_HANDLE_VALUE)
         return NULL;
@@ -325,7 +311,7 @@ DIR *mz_win32_open_dir(const char *path)
     return (DIR *)dir_int;
 }
 
-struct dirent* mz_win32_read_dir(DIR *dir)
+struct dirent* mz_os_read_dir(DIR *dir)
 {
     DIR_int *dir_int;
 
@@ -350,7 +336,7 @@ struct dirent* mz_win32_read_dir(DIR *dir)
     return &dir_int->entry;
 }
 
-int32_t mz_win32_close_dir(DIR *dir)
+int32_t mz_os_close_dir(DIR *dir)
 {
     DIR_int *dir_int;
 
@@ -364,14 +350,14 @@ int32_t mz_win32_close_dir(DIR *dir)
     return MZ_OK;
 }
 
-int32_t mz_win32_is_dir(const char *path)
+int32_t mz_os_is_dir(const char *path)
 {
     wchar_t *path_wide = NULL;
     uint32_t attribs = 0;
 
-    path_wide = mz_win32_unicode_path_create(path);
+    path_wide = mz_os_unicode_string_create(path);
     attribs = GetFileAttributesW(path_wide);
-    mz_win32_unicode_path_delete(&path_wide);
+    mz_os_unicode_string_delete(&path_wide);
 
     if (attribs != 0xFFFFFFFF)
     {
@@ -382,7 +368,7 @@ int32_t mz_win32_is_dir(const char *path)
     return MZ_EXIST_ERROR;
 }
 
-uint64_t mz_win32_ms_time(void)
+uint64_t mz_os_ms_time(void)
 {
     SYSTEMTIME system_time;
     FILETIME file_time;

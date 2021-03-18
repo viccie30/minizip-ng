@@ -1,4 +1,4 @@
-# minizip 2.6.0
+# minizip 2.7.0
 
 minizip is a zip manipulation library written in C that is supported on Windows, macOS, and Linux. 
 
@@ -12,7 +12,7 @@ This library is a complete refactoring of the minizip contribution found in the 
 distribution. The motivation for this fork has been the inclusion of advanced features, 
 improvements in code maintainability and readability, and the reduction of duplicate code.
 
-Minizip was originally developed by [Gilles Vollant](http://www.winimage.com/zLibDll/minizip.html) and 
+Minizip was originally developed by [Gilles Vollant](https://www.winimage.com/zLibDll/minizip.html) and 
 had been contributed to by many people. As part of the zlib distribution, Mark Adler has maintained the
 original [minizip](https://github.com/madler/zlib/tree/master/contrib/minizip) project.
 
@@ -44,6 +44,9 @@ Master: [![Master Branch Status](https://api.travis-ci.org/nmoinvaz/minizip.svg?
 + Windows (Win32 & WinRT), macOS and Linux platform support.
 + Streaming interface for easy implementation of additional platforms.
 + Support for Apple's compression library ZLIB implementation.
++ Zeroing out of local file header information.
++ Zip/unzip of central directory to reduce size.
++ Ability to generate and verify CMS signature for each entry.
 + Compatibility interface for older versions of minizip.
 + Example minizip command line tool.
 
@@ -64,37 +67,17 @@ cmake --build .
 
 | Name | Description | Default Value |
 |:- |:-|:-:|
+| USE_COMPAT | Enables compatibility layer | ON |
 | USE_ZLIB | Enables ZLIB compression | ON |
 | USE_BZIP2 | Enables BZIP2 compression | ON |
 | USE_LZMA | Enables LZMA compression | ON |
 | USE_PKCRYPT | Enables PKWARE traditional encryption | ON |
 | USE_AES | Enables WinZIP AES encryption | ON |
 | USE_LIBCOMP | Enables Apple compression | OFF |
+| USE_OPENSSL | Enables OpenSSL encryption | OFF |
 | COMPRESS_ONLY | Only support compression | OFF |
 | DECOMPRESS_ONLY | Only support decompression | OFF |
 | BUILD_TEST | Builds minizip test executable | OFF |
-
-## Zlib Installation (Windows)
-
-Option 1. Install the zlib package to the Program Files directory with an Administrator command prompt.
-
-```
-cmake . -DCMAKE_INSTALL_PREFIX=%PROGRAMFILES%\zlib
-cmake --build . --config Release --target INSTALL
-```
-
-Option 2. Compile zlib in minizip's lib directory. 
-
-```
-cmake .
-cmake --build . --config Release
-```
-
-Navigate back to the minizip directory and before building run:
-
-```
-cmake . -DZLIB_LIBRARY=lib\zlib\release\zlibstatic.lib -DZLIB_INCLUDE_DIR=lib\zlib\
-```
 
 ## Contents
 
@@ -103,9 +86,9 @@ cmake . -DZLIB_LIBRARY=lib\zlib\release\zlibstatic.lib -DZLIB_INCLUDE_DIR=lib\zl
 | minizip.c | Sample application | No |
 | mz_compat.\* | Minizip 1.0 compatibility layer | No |
 | mz.h | Error codes and flags | Yes |
-| mz_os\* | OS specific helper functions | Encryption, Disk Splitting |
+| mz_os\* | Platform specific file/utility functions | Likely |
+| mz_crypt\* | Configuration specific crypto/hashing functions | Encryption, Signing |
 | mz_strm.\* | Stream interface | Yes |
-| mz_strm_aes.\* | WinZIP AES stream | No |
 | mz_strm_buf.\* | Buffered stream | No |
 | mz_strm_bzip.\* | BZIP2 stream using libbzip2 | No |
 | mz_strm_crc32.\* | CRC32 stream | Yes |
@@ -114,8 +97,8 @@ cmake . -DZLIB_LIBRARY=lib\zlib\release\zlibstatic.lib -DZLIB_INCLUDE_DIR=lib\zl
 | mz_strm_mem.\* | Memory stream | Yes |
 | mz_strm_split.\* | Disk splitting stream | No |
 | mz_strm_pkcrypt.\* | PKWARE traditional encryption stream | No |
-| mz_strm_posix.\* | File stream using Posix functions | Non-windows systems |
-| mz_strm_win32.\* | File stream using Win32 API functions | Windows systems |
+| mz_strm_os\* | Platform specific file stream | Yes |
+| mz_strm_wzaes.\* | WinZIP AES stream | No |
 | mz_strm_zlib.\* | Deflate stream using zlib | zlib or liblzma |
 | mz_zip.\* | Zip format | Yes |
 | mz_zip_rw.\* | Zip reader/writer | No |
@@ -130,16 +113,9 @@ cmake . -DZLIB_LIBRARY=lib\zlib\release\zlibstatic.lib -DZLIB_INCLUDE_DIR=lib\zl
   + Modifications were made to support the ZIP file format specification
 + [AES](https://github.com/BrianGladman/aes) and [SHA](https://github.com/BrianGladman/sha) libraries of Brian Gladman.
 
-## Limitations
-
-+ Archives are required to have a central directory.
-+ Central directory header values should be correct and it is necessary for the compressed size to be accurate for AES encryption.
-+ Central directory encryption is not supported due to licensing restrictions mentioned by PKWARE in their zip appnote.
-+ Central directory is the only data stored on the last disk of a split-disk archive and doesn't follow disk size restrictions.
-
 ## Acknowledgments
 
-Thanks to [Gilles Vollant](http://www.winimage.com/zLibDll/minizip.html) on which this work is originally based on. 
+Thanks to [Gilles Vollant](https://www.winimage.com/zLibDll/minizip.html) on which this work is originally based on. 
 
 Thanks go out to all the people who have taken the time to contribute code reviews, testing and/or patches. This project would not have been nearly as good without you.
 
