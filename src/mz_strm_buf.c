@@ -1,5 +1,5 @@
 /* mz_strm_buf.c -- Stream for buffering reads/writes
-   Version 2.2.3, October 27th, 2017
+   Version 2.2.4, November 15th, 2017
    part of the MiniZip project
 
    This version of ioapi is designed to buffer IO.
@@ -69,6 +69,11 @@ int32_t mz_stream_buffered_open(void *stream, const char *path, int32_t mode)
     //mz_stream_buffered *buffered = (mz_stream_buffered *)stream;
     //mz_stream_buffered_print(opaque, buffered, "open [mode %d]\n", mode);
     return mz_stream_open(stream, path, mode);
+}
+
+int32_t mz_stream_buffered_is_open(void *stream)
+{
+    return mz_stream_is_open(stream);
 }
 
 int32_t mz_stream_buffered_flush(void *stream, int32_t *written)

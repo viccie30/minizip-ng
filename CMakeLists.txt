@@ -5,11 +5,12 @@
 #***************************************************************************
 cmake_minimum_required(VERSION 2.8)
 
-option(USE_CRYPT "Enables building with PKWARE traditional encryption" ON)
-option(USE_AES "Enables building with AES library" ON)
+option(USE_ZLIB "Enables building with ZLIB library" ON)
 option(USE_BZIP2 "Enables building with BZIP2 library" ON)
 option(USE_LZMA "Enables building with LZMA library" ON)
-option(BUILD_TEST "Enables building of executables. Requires ZLIB!" OFF)
+option(USE_CRYPT "Enables building with PKWARE traditional encryption" ON)
+option(USE_AES "Enables building with AES library" ON)
+option(BUILD_TEST "Enables building of minizip executable." OFF)
 
 # Set a consistent MACOSX_RPATH default across all CMake versions.
 # When CMake 2.8.12 is required, change this default to 1.
@@ -26,16 +27,18 @@ set(INSTALL_PKGCONFIG_DIR "share/pkgconfig" CACHE PATH "Installation directory f
 
 project("minizip")
 
-set(VERSION "2.2.3")
+set(VERSION "2.2.4")
 
 # Set cmake debug postfix to d
 set(CMAKE_DEBUG_POSTFIX "d")
 
 # Ensure correct version of zlib is referenced
-set(ZLIB_ROOT ${DEF_ZLIB_ROOT} CACHE PATH "Parent directory of zlib installation")
-find_package(ZLIB REQUIRED)
-if(ZLIB_FOUND)
-    include_directories(${ZLIB_INCLUDE_DIRS})
+if(USE_ZLIB)
+    set(ZLIB_ROOT ${DEF_ZLIB_ROOT} CACHE PATH "Parent directory of zlib installation")
+    find_package(ZLIB REQUIRED)
+    if(ZLIB_FOUND)
+        include_directories(${ZLIB_INCLUDE_DIRS})
+    endif()
 endif()
 
 set(MINIZIP_PC ${CMAKE_CURRENT_BINARY_DIR}/minizip.pc)
@@ -114,7 +117,6 @@ if(USE_AES)
         lib/aes/aeskey.c
         lib/aes/aestab.c
         lib/aes/aes_ni.c
-        lib/aes/fileenc.c
         lib/aes/hmac.c
         lib/aes/pwd2key.c
         lib/aes/sha1.c)
@@ -126,7 +128,6 @@ if(USE_AES)
         lib/aes/aestab.h
         lib/aes/brg_endian.h
         lib/aes/brg_types.h
-        lib/aes/fileenc.h
         lib/aes/hmac.h
         lib/aes/pwd2key.h
         lib/aes/sha1.h)
@@ -136,6 +137,9 @@ if(USE_AES)
     source_group("AES" FILES ${AES_SRC} ${AES_PUBLIC_HEADERS})
 endif()
 
+if(USE_ZLIB)
+    add_definitions(-DHAVE_ZLIB)
+endif()
 if(USE_BZIP2)
     add_definitions(-DHAVE_BZIP2)
     add_definitions(-DBZ_NO_STDIO)
@@ -171,6 +175,7 @@ if(USE_LZMA)
 
     set(LZMA_CHECK_SRC
         lib/liblzma/check/check.c
+        lib/liblzma/check/crc32_fast.c
         lib/liblzma/check/crc32_table.c)
     set(LZMA_COMMON_SRC
         lib/liblzma/common/alone_decoder.c
@@ -206,7 +211,8 @@ if(USE_LZMA)
     set(LZMA_CHECK_HEADERS
         lib/liblzma/check/check.h
         lib/liblzma/check/crc32_table_be.h
-        lib/liblzma/check/crc32_table_le.h)
+        lib/liblzma/check/crc32_table_le.h
+        lib/liblzma/check/crc_macros.h)
     set(LZMA_COMMON_HEADERS
         lib/liblzma/common/alone_decoder.h
         lib/liblzma/common/common.h
@@ -281,10 +287,12 @@ add_library(${PROJECT_NAME}
                 ${LZMA_SRC} ${LZMA_PUBLIC_HEADERS})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE C PREFIX "")
+if(USE_ZLIB)
+    target_link_libraries(${PROJECT_NAME} ZLIB::ZLIB)
+endif()
 if(USE_LZMA)
     set_target_properties(${PROJECT_NAME} PROPERTIES C_STANDARD 99)
 endif()
-target_link_libraries(${PROJECT_NAME} ZLIB::ZLIB)
 if(UNIX)
     target_link_libraries(${PROJECT_NAME} ${LIBBSD_LIBRARIES})
 endif()

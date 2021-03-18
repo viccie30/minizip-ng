@@ -1,5 +1,5 @@
 /* mz_strm_lzma.h -- Stream for lzma inflate/deflate
-   Version 2.2.3, October 27th, 2017
+   Version 2.2.4, November 15th, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -36,6 +36,7 @@ void*   mz_stream_lzma_create(void **stream);
 void    mz_stream_lzma_delete(void **stream);
 
 void*   mz_stream_lzma_get_interface(void);
+void*   mz_stream_lzma_get_crc32_update(void);
 
 /***************************************************************************/
 

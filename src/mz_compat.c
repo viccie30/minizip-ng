@@ -1,5 +1,5 @@
 /* mz_compat.c -- Backwards compatible interface for older versions
-   Version 2.2.3, October 27th, 2017
+   Version 2.2.4, November 15th, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -227,7 +227,10 @@ extern int ZEXPORT zipClose2_64(zipFile file, const char *global_comment, uint16
     err = mz_zip_close(compat->handle);
 
     if (compat->stream != NULL)
+    {
+        mz_stream_close(compat->stream);
         mz_stream_delete(&compat->stream);
+    }
 
     free(compat);
 
