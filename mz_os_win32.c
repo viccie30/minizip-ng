@@ -1,5 +1,5 @@
 /* mz_os_win32.c -- System functions for Windows
-   Version 2.3.7, July 13, 2018
+   Version 2.3.8, July 14, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -14,6 +14,7 @@
 #include <string.h>
 #include <time.h>
 #include <direct.h>
+#include <errno.h>
 
 #include <windows.h>
 #include <wincrypt.h>
