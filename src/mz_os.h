@@ -1,5 +1,5 @@
 /* mz_os.h -- System functions
-   Version 2.2.7, January 30th, 2018
+   Version 2.2.8, March 15th, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -29,6 +29,21 @@ extern "C" {
 #include "mz_os_win32.h"
 #include "mz_strm_win32.h"
 #endif
+
+/***************************************************************************/
+
+#ifdef HAVE_LZMA
+#define MZ_VERSION_MADEBY_ZIP_VERSION (63)
+#elif HAVE_AES
+#define MZ_VERSION_MADEBY_ZIP_VERSION (51)
+#elif HAVE_BZIP2
+#define MZ_VERSION_MADEBY_ZIP_VERSION (46)
+#else
+#define MZ_VERSION_MADEBY_ZIP_VERSION (45)
+#endif
+
+#define MZ_VERSION_MADEBY             ((MZ_VERSION_MADEBY_HOST_SYSTEM << 8) | \
+                                       (MZ_VERSION_MADEBY_ZIP_VERSION))
 
 /***************************************************************************/
 

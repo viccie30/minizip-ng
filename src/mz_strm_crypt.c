@@ -1,5 +1,5 @@
 /* mz_strm_crypt.c -- Code for traditional PKWARE encryption
-   Version 2.2.7, January 30th, 2018
+   Version 2.2.8, March 15th, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -55,6 +55,10 @@ mz_stream_vtbl mz_stream_crypt_vtbl = {
 };
 
 /***************************************************************************/
+
+#if ZLIB_VERNUM < 0x1270 // Define z_crc_t in zlib 1.2.5 and less
+typedef unsigned long z_crc_t;
+#endif
 
 typedef struct mz_stream_crypt_s {
     mz_stream       stream;

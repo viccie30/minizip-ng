@@ -1,5 +1,5 @@
 /* mz_zip.h -- Zip manipulation
-   Version 2.2.7, January 30th, 2018
+   Version 2.2.8, March 15th, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -107,6 +107,9 @@ extern int32_t mz_zip_entry_close(void *handle);
 
 extern int32_t mz_zip_get_number_entry(void *handle, int64_t *number_entry);
 // Get the total number of entries
+
+extern int32_t mz_zip_get_disk_number_with_cd(void *handle, int64_t *disk_number_with_cd);
+// Get the the disk number containing the central directory record
 
 extern int32_t mz_zip_goto_first_entry(void *handle);
 // Go to the first entry in the zip file 
