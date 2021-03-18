@@ -16,7 +16,7 @@ option(COMPRESS_ONLY "Only support compression" OFF)
 option(DECOMPRESS_ONLY "Only support decompression" OFF)
 option(BUILD_TEST "Builds minizip test executable" OFF)
 
-project("minizip")
+project("minizip" C)
 
 include(CheckLibraryExists)
 include(CheckSymbolExists)
@@ -30,7 +30,7 @@ set(INSTALL_PKGCONFIG_DIR ${CMAKE_INSTALL_LIBDIR}/pkgconfig CACHE PATH "Installa
 set(INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/minizip CACHE PATH "Installation directory for cmake files.")
 
 # Minizip library version
-set(VERSION "2.5.2")
+set(VERSION "2.5.3")
 
 # Minizip api version
 set(SOVERSION "2.5")
@@ -111,6 +111,10 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore")
     add_definitions(-DMZ_WINRT_API)
 endif()
 
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_CLANG)
+    add_compile_options(-W -Wall)
+endif()
+
 if(UNIX)
     add_compile_options(-O3)
 
@@ -122,7 +126,7 @@ if(UNIX)
     if(ANDROID)
         string(REGEX REPLACE "android-([0-9+])" "\\1"
             android_api "${ANDROID_PLATFORM}")
-        if(${android_api} LESS 24)
+        if(android_api LESS 24)
             set(define_lfs_macros FALSE)
         endif()
     endif()
@@ -392,7 +396,7 @@ if(USE_ZLIB)
     target_link_libraries(${PROJECT_NAME} ZLIB::ZLIB)
 endif()
 if(USE_BZIP2 AND BZIP2_FOUND)
-    target_link_libraries(${PROJECT_NAME} BZip2::BZip2)
+    target_link_libraries(${PROJECT_NAME} ${BZIP2_LIBRARIES})
 endif()
 if(USE_LZMA)
     set_target_properties(${PROJECT_NAME} PROPERTIES C_STANDARD 99)

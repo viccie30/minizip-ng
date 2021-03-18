@@ -1,5 +1,5 @@
 /* mz_compat.c -- Backwards compatible interface for older versions
-   Version 2.5.2, August 27, 2018
+   Version 2.5.3, September 18, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -125,8 +125,15 @@ zipFile ZEXPORT zipOpen_MZ(void *stream, int append, const char **globalcomment)
         mz_zip_get_comment(handle, globalcomment);
 
     compat = (mz_compat *)MZ_ALLOC(sizeof(mz_compat));
-    compat->handle = handle;
-    compat->stream = stream;
+    if (compat != NULL)
+    {
+        compat->handle = handle;
+        compat->stream = stream;
+    }
+    else
+    {
+        mz_zip_delete(&handle);
+    }
 
     return (zipFile)compat;
 }
@@ -369,7 +376,7 @@ unzFile ZEXPORT unzOpen2_64(const void *path, zlib_filefunc64_def *pzlib_filefun
         if (mz_stream_os_create(&stream) == NULL)
             return NULL;
     }
-    
+
     if (mz_stream_open(stream, path, MZ_OPEN_MODE_READ) != MZ_OK)
     {
         mz_stream_delete(&stream);
@@ -401,10 +408,18 @@ unzFile ZEXPORT unzOpen_MZ(void *stream)
     }
 
     compat = (mz_compat *)MZ_ALLOC(sizeof(mz_compat));
-    compat->handle = handle;
-    compat->stream = stream;
+    if (compat != NULL)
+    {
+        compat->handle = handle;
+        compat->stream = stream;
 
-    mz_zip_goto_first_entry(compat->handle);
+        mz_zip_goto_first_entry(compat->handle);
+    }
+    else
+    {
+        mz_zip_delete(&handle);
+    }
+
     return (unzFile)compat;
 }
 
@@ -494,7 +509,10 @@ int ZEXPORT unzGetGlobalComment(unzFile file, char *comment, uint16_t comment_si
         return UNZ_PARAMERROR;
     err = mz_zip_get_comment(compat->handle, &comment_ptr);
     if (err == MZ_OK)
-        strncpy(comment, comment_ptr, comment_size);
+    {
+        strncpy(comment, comment_ptr, comment_size - 1);
+        comment[comment_size - 1] = 0;
+    }
     return err;
 }
 
@@ -526,7 +544,7 @@ int ZEXPORT unzOpenCurrentFile3(unzFile file, int *method, int *level, int raw, 
             *level = 6;
             switch (file_info->flag & 0x06)
             {
-            case MZ_ZIP_FLAG_DEFLATE_SUPER_FAST: 
+            case MZ_ZIP_FLAG_DEFLATE_SUPER_FAST:
                 *level = 1;
                 break;
             case MZ_ZIP_FLAG_DEFLATE_FAST:

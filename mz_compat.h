@@ -1,5 +1,5 @@
 /* mz_compat.h -- Backwards compatible interface for older versions
-   Version 2.5.2, August 27, 2018
+   Version 2.5.3, September 18, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -15,9 +15,10 @@
 #define MZ_COMPAT_H
 
 #include <stdint.h>
+#include <time.h>
 
 #ifdef __cplusplus
-"C" {
+extern "C" {
 #endif
 
 #ifdef HAVE_ZLIB
