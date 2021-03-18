@@ -1,4 +1,4 @@
-# Minizip 2.1.1
+# Minizip 2.2.0
 
 This library is a refactoring of the minizip contribution found in the zlib distribution that is supported on Windows, macOS, and Linux. The motivation for this work has been the inclusion of advanced features, improvements in code maintainability and readability, and the reduction of duplicate code. It is based on the original work of [Gilles Vollant](http://www.winimage.com/zLibDll/minizip.html) that has been contributed to by many people over the years.
 
@@ -39,6 +39,41 @@ cmake --build .
 | mz_zip.\* | Zip functionality | Yes |
 
 ## Features
+
+### Compression Methods
+
+#### BZIP2
+
++ Requires ``cmake . -DUSE_BZIP2=ON`` or ``#define HAVE_BZIP2``
++ Requires [BZIP2](http://www.bzip.org/) library
+
+#### LZMA
+
++ Requires ``cmake . -DUSE_LZMA=ON`` or ``#define HAVE_LZMA``
++ Requires [liblzma](https://tukaani.org/xz/) library
+
+### Encryption
+
+#### [WinZIP AES Encryption](http://www.winzip.com/aes_info.htm)
+
++ Requires ``cmake . -DUSE_AES=ON`` or ``#define HAVE_AES``
++ Requires [Brian Gladman's](https://github.com/BrianGladman/aes) AES library
+
+When zipping with a password it will always use AES 256-bit encryption.
+When unzipping it will use AES decryption only if necessary.
+
+#### Disabling All Encryption
+
+To disable encryption use the following cmake commands:
+
+```
+cmake . -DUSE_AES=OFF
+cmake . -DUSE_CRYPT=OFF
+```
+
+### NTFS Timestamps
+
+Support has been added for UTC modified, access, and creation dates.
 
 ### Streams
 
@@ -118,37 +153,6 @@ handle = mz_zip_open(split_stream, MZ_STREAM_MODE_WRITE);
 The central directory is the only data stored in the .zip and doesn't follow disk size restrictions.
 
 When unzipping it will automatically determine when in needs to cross disk boundaries.
-
-### Compression Methods
-
-#### BZIP2
-
-+ Requires ``cmake . -DUSE_BZIP2=ON`` or ``#define HAVE_BZIP2``
-+ Requires [BZIP2](http://www.bzip.org/) library
-
-#### LZMA
-
-+ Requires ``cmake . -DUSE_LZMA=ON`` or ``#define HAVE_LZMA``
-+ Requires [liblzma](https://tukaani.org/xz/) library
-
-### Encryption
-
-#### [WinZIP AES Encryption](http://www.winzip.com/aes_info.htm)
-
-+ Requires ``cmake . -DUSE_AES=ON`` or ``#define HAVE_AES``
-+ Requires [Brian Gladman's](https://github.com/BrianGladman/aes) AES library
-
-When zipping with a password it will always use AES 256-bit encryption.
-When unzipping it will use AES decryption only if necessary.
-
-#### Disabling All Encryption
-
-To disable encryption use the following cmake commands:
-
-```
-cmake . -DUSE_AES=OFF
-cmake . -DUSE_CRYPT=OFF
-```
 
 ### Windows RT
 

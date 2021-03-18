@@ -110,7 +110,7 @@ extern int ZEXPORT zipOpenNewFileInZip5(zipFile file, const char *filename, cons
 
     if (zipfi != NULL)
     {
-        file_info.dos_date = zipfi->dos_date;
+        file_info.modified_date = mz_zip_dosdate_to_time_t(zipfi->dos_date);
         file_info.external_fa = zipfi->external_fa;
         file_info.internal_fa = zipfi->internal_fa;
     }
@@ -408,14 +408,14 @@ extern int ZEXPORT unzGetCurrentFileInfo(unzFile file, unz_file_info *pfile_info
         pfile_info->version_needed = file_info->version_needed;
         pfile_info->flag = file_info->flag;
         pfile_info->compression_method = file_info->compression_method;
-        pfile_info->dos_date = file_info->dos_date;
+        pfile_info->dos_date = mz_zip_time_t_to_dos_date(file_info->modified_date);
         pfile_info->crc = file_info->crc;
 
         pfile_info->size_filename = file_info->filename_size;
         pfile_info->size_file_extra = file_info->extrafield_size;
         pfile_info->size_file_comment = file_info->comment_size;
 
-        pfile_info->disk_num_start = (uint16_t)file_info->disk_num_start;
+        pfile_info->disk_num_start = (uint16_t)file_info->disk_number;
         pfile_info->internal_fa = file_info->internal_fa;
         pfile_info->external_fa = file_info->external_fa;
 
@@ -466,14 +466,14 @@ extern int ZEXPORT unzGetCurrentFileInfo64(unzFile file, unz_file_info64 * pfile
         pfile_info->version_needed = file_info->version_needed;
         pfile_info->flag = file_info->flag;
         pfile_info->compression_method = file_info->compression_method;
-        pfile_info->dos_date = file_info->dos_date;
+        pfile_info->dos_date = mz_zip_time_t_to_dos_date(file_info->modified_date);
         pfile_info->crc = file_info->crc;
 
         pfile_info->size_filename = file_info->filename_size;
         pfile_info->size_file_extra = file_info->extrafield_size;
         pfile_info->size_file_comment = file_info->comment_size;
 
-        pfile_info->disk_num_start = file_info->disk_num_start;
+        pfile_info->disk_num_start = file_info->disk_number;
         pfile_info->internal_fa = file_info->internal_fa;
         pfile_info->external_fa = file_info->external_fa;
 
