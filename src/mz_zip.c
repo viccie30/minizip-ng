@@ -1,5 +1,5 @@
 /* zip.c -- Zip manipulation
-   Version 2.2.6, January 6th, 2018
+   Version 2.2.7, January 30th, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -20,6 +20,7 @@
 #include <string.h>
 #include <time.h>
 #include <errno.h>
+#include <limits.h>
 
 #include "mz.h"
 #include "mz_strm.h"
@@ -1314,7 +1315,7 @@ extern int32_t mz_zip_entry_read(void *handle, void *buf, uint32_t len)
 
     if (zip == NULL || zip->entry_opened == 0)
         return MZ_PARAM_ERROR;
-    if (len > UINT16_MAX) // Zlib limitation
+    if (UINT_MAX == UINT16_MAX && len > UINT16_MAX) // Zlib limitation
         return MZ_PARAM_ERROR;
     if (len == 0 || zip->file_info.uncompressed_size == 0)
         return 0;
