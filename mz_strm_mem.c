@@ -1,5 +1,5 @@
 /* mz_strm_mem.c -- Stream for memory access
-   Version 2.3.6, July 11, 2018
+   Version 2.3.7, July 13, 2018
    part of the MiniZip project
 
    This interface is designed to access memory rather than files.
@@ -232,6 +232,12 @@ void mz_stream_mem_get_buffer_length(void *stream, int32_t *length)
 {
     mz_stream_mem *mem = (mz_stream_mem *)stream;
     *length = mem->limit;
+}
+
+void mz_stream_mem_set_buffer_limit(void *stream, int32_t limit)
+{
+    mz_stream_mem *mem = (mz_stream_mem *)stream;
+    mem->limit = limit;
 }
 
 void mz_stream_mem_set_grow_size(void *stream, int32_t grow_size)

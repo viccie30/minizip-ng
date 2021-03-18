@@ -1,5 +1,5 @@
 /* mz_strm_mem.h -- Stream for memory access
-   Version 2.3.6, July 11, 2018
+   Version 2.3.7, July 13, 2018
    part of MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -33,6 +33,7 @@ void    mz_stream_mem_set_buffer(void *stream, void *buf, int32_t size);
 int32_t mz_stream_mem_get_buffer(void *stream, const void **buf);
 int32_t mz_stream_mem_get_buffer_at(void *stream, int64_t position, const void **buf);
 void    mz_stream_mem_get_buffer_length(void *stream, int32_t *length);
+void    mz_stream_mem_set_buffer_limit(void *stream, int32_t limit);
 void    mz_stream_mem_set_grow_size(void *stream, int32_t grow_size);
 
 void*   mz_stream_mem_create(void **stream);

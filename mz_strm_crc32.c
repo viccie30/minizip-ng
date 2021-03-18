@@ -1,5 +1,5 @@
 /* mz_strm_crc32.c -- Stream for CRC32 hashing
-   Version 2.3.6, July 11, 2018
+   Version 2.3.7, July 13, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -12,10 +12,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-
-#ifdef HAVE_ZLIB
-#include "zlib.h"
-#endif
 
 #include "mz.h"
 #include "mz_strm.h"
@@ -52,8 +48,8 @@ typedef struct mz_stream_crc32_s {
     int64_t    value;
     int64_t    total_in;
     int64_t    total_out;
-
-    mz_stream_crc32_update update;
+    mz_stream_crc32_update 
+               update;
 } mz_stream_crc32;
 
 /***************************************************************************/
