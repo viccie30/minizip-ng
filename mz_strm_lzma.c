@@ -1,5 +1,5 @@
 /* mz_strm_lzma.c -- Stream for lzma inflate/deflate
-   Version 2.3.4, June 19, 2018
+   Version 2.3.5, July 9, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -275,7 +275,7 @@ static int32_t mz_stream_lzma_code(void *stream, int32_t flush)
         lzma->buffer_len += out_bytes;
         lzma->total_out += out_bytes;
     }
-    while (lzma->lstream.avail_in > 0);
+    while ((lzma->lstream.avail_in > 0) || (flush == LZMA_FINISH && err == LZMA_OK));
 
     return MZ_OK;
 }
@@ -324,8 +324,11 @@ int32_t mz_stream_lzma_close(void *stream)
 #ifdef MZ_ZIP_DECOMPRESS_ONLY
         return MZ_SUPPORT_ERROR;
 #else
-        mz_stream_lzma_code(stream, LZMA_FINISH);
-        mz_stream_lzma_flush(stream);
+        if (lzma->total_in > 0)
+        {
+            mz_stream_lzma_code(stream, LZMA_FINISH);
+            mz_stream_lzma_flush(stream);
+        }
 
         lzma_end(&lzma->lstream);
 #endif
@@ -360,8 +363,14 @@ int32_t mz_stream_lzma_get_prop_int64(void *stream, int32_t prop, int64_t *value
     case MZ_STREAM_PROP_TOTAL_IN:
         *value = lzma->total_in;
         return MZ_OK;
+    case MZ_STREAM_PROP_TOTAL_IN_MAX:
+        *value = lzma->max_total_in;
+        return MZ_OK;
     case MZ_STREAM_PROP_TOTAL_OUT:
         *value = lzma->total_out;
+        return MZ_OK;
+    case MZ_STREAM_PROP_TOTAL_OUT_MAX:
+        *value = lzma->max_total_out;
         return MZ_OK;
     case MZ_STREAM_PROP_HEADER_SIZE:
         *value = MZ_LZMA_HEADER_SIZE;

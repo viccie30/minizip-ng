@@ -1,5 +1,5 @@
 /* mz_strm_pkcrypt.c -- Code for traditional PKWARE encryption
-   Version 2.3.4, June 19, 2018
+   Version 2.3.5, July 9, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -44,7 +44,7 @@
 
 /***************************************************************************/
 
-#define RAND_HEAD_LEN  12
+#define RAND_HEAD_LEN  (12)
 
 /***************************************************************************/
 
@@ -314,6 +314,12 @@ int32_t mz_stream_pkcrypt_get_prop_int64(void *stream, int32_t prop, int64_t *va
         return MZ_OK;
     case MZ_STREAM_PROP_TOTAL_OUT:
         *value = pkcrypt->total_out;
+        return MZ_OK;
+    case MZ_STREAM_PROP_HEADER_SIZE:
+        *value = RAND_HEAD_LEN;
+        return MZ_OK;
+    case MZ_STREAM_PROP_FOOTER_SIZE:
+        *value = 0;
         return MZ_OK;
     }
     return MZ_EXIST_ERROR;

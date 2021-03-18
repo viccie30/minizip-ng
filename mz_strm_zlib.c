@@ -1,5 +1,5 @@
 /* mz_strm_zlib.c -- Stream for zlib inflate/deflate
-   Version 2.3.4, June 19, 2018
+   Version 2.3.5, July 9, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -308,8 +308,11 @@ int32_t mz_stream_zlib_close(void *stream)
 #ifdef MZ_ZIP_DECOMPRESS_ONLY
         return MZ_SUPPORT_ERROR;
 #else
-        mz_stream_zlib_deflate(stream, Z_FINISH);
-        mz_stream_zlib_flush(stream);
+        if (zlib->total_in > 0)
+        {
+            mz_stream_zlib_deflate(stream, Z_FINISH);
+            mz_stream_zlib_flush(stream);
+        }
 
         deflateEnd(&zlib->zstream);
 #endif
@@ -343,6 +346,9 @@ int32_t mz_stream_zlib_get_prop_int64(void *stream, int32_t prop, int64_t *value
     {
     case MZ_STREAM_PROP_TOTAL_IN:
         *value = zlib->total_in;
+        return MZ_OK;
+    case MZ_STREAM_PROP_TOTAL_IN_MAX:
+        *value = zlib->max_total_in;
         return MZ_OK;
     case MZ_STREAM_PROP_TOTAL_OUT:
         *value = zlib->total_out;

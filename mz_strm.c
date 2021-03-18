@@ -1,5 +1,5 @@
 /* mz_strm.c -- Stream interface
-   Version 2.3.4, June 19, 2018
+   Version 2.3.5, July 9, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -325,8 +325,10 @@ int32_t mz_stream_crc32_read(void *stream, void *buf, int32_t size)
     int32_t read = 0;
     read = mz_stream_read(crc32x->stream.base, buf, size);
     if (read > 0)
+    {
         crc32x->value = crc32x->update(crc32x->value, buf, read);
-    crc32x->total_in += read;
+        crc32x->total_in += read;
+    }
     return read;
 }
 
