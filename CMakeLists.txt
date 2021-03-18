@@ -27,10 +27,10 @@ set(INSTALL_PKGCONFIG_DIR ${CMAKE_INSTALL_LIBDIR}/pkgconfig CACHE PATH "Installa
 set(INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/minizip CACHE PATH "Installation directory for cmake files.")
 
 # Minizip library version
-set(VERSION "2.4.0")
+set(VERSION "2.5.0")
 
 # Minizip api version
-set(SOVERSION "2")
+set(SOVERSION "2.5")
 
 # Set cmake debug postfix to d
 set(CMAKE_DEBUG_POSTFIX "d")
@@ -59,7 +59,8 @@ set(MINIZIP_SRC
     mz_strm_mem.c
     mz_strm_posix.c
     mz_strm_split.c
-    mz_zip.c)
+    mz_zip.c
+    mz_zip_rw.c)
 
 set(MINIZIP_PUBLIC_HEADERS
     mz.h
@@ -71,7 +72,8 @@ set(MINIZIP_PUBLIC_HEADERS
     mz_strm_mem.h
     mz_strm_posix.h
     mz_strm_split.h
-    mz_zip.h)
+    mz_zip.h
+    mz_zip_rw.h)
 
 if(COMPRESS_ONLY)
     add_definitions(-DMZ_ZIP_NO_DECOMPRESSION)
