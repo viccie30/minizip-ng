@@ -1,20 +1,23 @@
-# minizip 2.9.0
+# minizip 2.9.1
 
 minizip is a zip manipulation library written in C that is supported on Windows, macOS, and Linux.
 
+[![Master Branch Status](https://github.com/nmoinvaz/minizip/workflows/CI/badge.svg)](https://github.com/nmoinvaz/minizip/actions)
+[![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/minizip.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:minizip)
+[![CodeFactor](https://www.codefactor.io/repository/github/nmoinvaz/minizip/badge)](https://www.codefactor.io/repository/github/nmoinvaz/minizip)
 [![License: Zlib](https://img.shields.io/badge/license-zlib-lightgrey.svg)](https://github.com/nmoinvaz/minizip/blob/master/LICENSE)
-[![Code Quality: Cpp](https://img.shields.io/lgtm/grade/cpp/g/nmoinvaz/minizip.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/nmoinvaz/minizip/context:cpp)
+[![codecov.io](https://codecov.io/github/nmoinvaz/minizip/coverage.svg?branch=dev)](https://codecov.io/github/nmoinvaz/minizip/)
 
 Maintained by Nathan Moinvaziri.
 
 ## Branches
 
-| Name | State | Version | Description |
-|:- |:-:|:-:|:-|
-|[master](https://github.com/nmoinvaz/minizip/tree/master)|Active [![Master Branch Status](https://api.travis-ci.org/nmoinvaz/minizip.svg?branch=master)](https://travis-ci.org/nmoinvaz/minizip/branches)|2.x|Modern rewrite of 1.2 branch that includes more advanced features, improvements in code maintainability and readability, and the reduction of duplicate code. Compatibility layer provided for older versions.|
-|[dev](https://github.com/nmoinvaz/minizip/tree/dev)|Active [![Dev Branch Status](https://api.travis-ci.org/nmoinvaz/minizip.svg?branch=dev)](https://travis-ci.org/nmoinvaz/minizip/branches)|2.x|Latest development code|
-|[1.2](https://github.com/nmoinvaz/minizip/tree/1.2)|Stale| 1.x|Drop-in replacement for zlib's minizip that includes WinZip AES encryption, disk splitting, I/O buffering and some additional fixes.|
-|[1.1](https://github.com/nmoinvaz/minizip/tree/1.1)|Stale| 1.x|Original minizip as of zlib 1.2.11.|
+| Name | Description |
+|:- |:-|
+|[master](https://github.com/nmoinvaz/minizip/tree/master)|Modern rewrite that includes more advanced features, improvements in code maintainability and readability, and the reduction of duplicate code. Compatibility layer provided for older versions.|
+|[dev](https://github.com/nmoinvaz/minizip/tree/dev)|Latest development code|
+|[1.2](https://github.com/nmoinvaz/minizip/tree/1.2)|Drop-in replacement for zlib's minizip that includes WinZip AES encryption, disk splitting, I/O buffering and some additional fixes.|
+|[1.1](https://github.com/nmoinvaz/minizip/tree/1.1)|Original minizip as of zlib 1.2.11.|
 
 ## History
 
@@ -55,7 +58,7 @@ the library as version 2 because it had become difficult to maintain and code re
 
 To generate project files for your platform:
 
-1. [Download and install](https://cmake.org/install/) cmake.
+1. [Download and install](https://cmake.org/install/) cmake (version 3.11 or later recommended).
 2. Run cmake in the minizip directory.
 
 ```
@@ -82,6 +85,7 @@ cmake --build .
 | MZ_BUILD_TEST | Builds minizip test executable | OFF |
 | MZ_BUILD_UNIT_TEST | Builds minizip unit test project | OFF |
 | MZ_BUILD_FUZZ_TEST | Builds minizip fuzz executables | OFF |
+| MZ_CODE_COVERAGE | Build with code coverage flags | OFF |
 
 ## Contents
 
