@@ -1,5 +1,5 @@
 /* mz_os.c -- System functions
-   Version 2.2.0, October 22nd, 2017
+   Version 2.2.1, October 23rd, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -27,13 +27,16 @@ int32_t mz_file_exists(const char *path)
 
     mz_stream_os_create(&stream);
 
-    err = mz_stream_os_open(stream, path, MZ_STREAM_MODE_READ);
+    err = mz_stream_os_open(stream, path, MZ_OPEN_MODE_READ);
     if (err == MZ_OK)
         mz_stream_os_close(stream);
 
     mz_stream_os_delete(&stream);
 
-    return err;
+    if (err == MZ_EXIST_ERROR)
+        return MZ_EXIST_ERROR;
+
+    return MZ_OK;
 }
 
 int64_t mz_file_get_size(const char *path)
@@ -43,9 +46,9 @@ int64_t mz_file_get_size(const char *path)
 
     mz_stream_os_create(&stream);
 
-    if (mz_stream_os_open(stream, path, MZ_STREAM_MODE_READ) == MZ_OK)
+    if (mz_stream_os_open(stream, path, MZ_OPEN_MODE_READ) == MZ_OK)
     {
-        mz_stream_os_seek(stream, 0, MZ_STREAM_SEEK_END);
+        mz_stream_os_seek(stream, 0, MZ_SEEK_END);
         size = mz_stream_os_tell(stream);
         mz_stream_os_close(stream);
     }
@@ -102,8 +105,6 @@ int32_t mz_make_dir(const char *path)
     free(current_dir);
     return err;
 }
-
-/***************************************************************************/
 
 int32_t mz_path_combine(char *path, const char *join, int32_t max_path)
 {

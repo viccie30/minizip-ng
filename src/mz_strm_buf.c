@@ -1,5 +1,5 @@
 /* mz_strm_buf.c -- Stream for buffering reads/writes
-   Version 2.2.0, October 22nd, 2017
+   Version 2.2.1, October 23rd, 2017
    part of the MiniZip project
 
    This version of ioapi is designed to buffer IO.
@@ -192,7 +192,7 @@ int32_t mz_stream_buffered_write(void *stream, const void *buf, int32_t size)
 
         mz_stream_buffered_print(opaque, stream, "switch from read to write [%lld]\n", buffered->position);
 
-        if (mz_stream_seek(buffered->stream.base, buffered->position, MZ_STREAM_SEEK_SET) != MZ_OK)
+        if (mz_stream_seek(buffered->stream.base, buffered->position, MZ_SEEK_SET) != MZ_OK)
             return MZ_STREAM_ERROR;
     }
 
@@ -262,7 +262,7 @@ int mz_stream_buffered_seekinternal(void *stream, int64_t offset, int32_t origin
 
     switch (origin)
     {
-        case MZ_STREAM_SEEK_SET:
+        case MZ_SEEK_SET:
 
             if (buffered->writebuf_len > 0)
             {
@@ -286,7 +286,7 @@ int mz_stream_buffered_seekinternal(void *stream, int64_t offset, int32_t origin
             buffered->position = offset;
             break;
 
-        case MZ_STREAM_SEEK_CUR:
+        case MZ_SEEK_CUR:
 
             if (buffered->readbuf_len > 0)
             {
@@ -313,7 +313,7 @@ int mz_stream_buffered_seekinternal(void *stream, int64_t offset, int32_t origin
 
             break;
 
-        case MZ_STREAM_SEEK_END:
+        case MZ_SEEK_END:
 
             if (buffered->writebuf_len > 0)
             {

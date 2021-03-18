@@ -1,5 +1,5 @@
 /* mz_strm_crypt.c -- Code for traditional PKWARE encryption
-   Version 2.2.0, October 22nd, 2017
+   Version 2.2.1, October 23rd, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -145,7 +145,7 @@ int32_t mz_stream_crypt_open(void *stream, const char *path, int32_t mode)
 
     mz_stream_crypt_init_keys(password, crypt->keys, crypt->crc_32_tab);
 
-    if (mode & MZ_STREAM_MODE_WRITE)
+    if (mode & MZ_OPEN_MODE_WRITE)
     {
         // First generate RAND_HEAD_LEN - 2 random bytes.
         mz_os_rand(header, RAND_HEAD_LEN - 2);
@@ -162,7 +162,7 @@ int32_t mz_stream_crypt_open(void *stream, const char *path, int32_t mode)
 
         crypt->total_out += RAND_HEAD_LEN;
     }
-    else if (mode & MZ_STREAM_MODE_READ)
+    else if (mode & MZ_OPEN_MODE_READ)
     {
         if (mz_stream_read(crypt->stream.base, header, RAND_HEAD_LEN) != RAND_HEAD_LEN)
             return MZ_STREAM_ERROR;

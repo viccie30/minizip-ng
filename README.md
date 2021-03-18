@@ -1,4 +1,4 @@
-# Minizip 2.2.0
+# Minizip 2.2.1
 
 This library is a refactoring of the minizip contribution found in the zlib distribution that is supported on Windows, macOS, and Linux. The motivation for this work has been the inclusion of advanced features, improvements in code maintainability and readability, and the reduction of duplicate code. It is based on the original work of [Gilles Vollant](http://www.winimage.com/zLibDll/minizip.html) that has been contributed to by many people over the years.
 
@@ -73,7 +73,7 @@ cmake . -DUSE_CRYPT=OFF
 
 ### NTFS Timestamps
 
-Support has been added for UTC modified, access, and creation dates.
+Support has been added for UTC last modified, last accessed, and creation dates.
 
 ### Streams
 
@@ -160,5 +160,6 @@ When unzipping it will automatically determine when in needs to cross disk bound
 
 ## Limitations
 
-+ Archives are required to have a central directory with correct header values for unzipping.
++ Archives are required to have a central directory.
++ Central directory header values should be correct and it is necessary for the compressed size to be accurate for AES encryption.
 + Central directory encryption is not supported due to licensing restrictions mentioned by PKWARE in their zip appnote.

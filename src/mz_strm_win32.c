@@ -1,5 +1,5 @@
 /* mz_strm_win32.c -- Stream for filesystem access for windows
-   Version 2.2.0, October 22nd, 2017
+   Version 2.2.1, October 23rd, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -78,18 +78,18 @@ int32_t mz_stream_win32_open(void *stream, const char *path, int32_t mode)
     if (path == NULL)
         return MZ_STREAM_ERROR;
 
-    if ((mode & MZ_STREAM_MODE_READWRITE) == MZ_STREAM_MODE_READ)
+    if ((mode & MZ_OPEN_MODE_READWRITE) == MZ_OPEN_MODE_READ)
     {
         desired_access = GENERIC_READ;
         creation_disposition = OPEN_EXISTING;
         share_mode &= FILE_SHARE_WRITE;
     }
-    else if (mode & MZ_STREAM_MODE_APPEND)
+    else if (mode & MZ_OPEN_MODE_APPEND)
     {
         desired_access = GENERIC_WRITE | GENERIC_READ;
         creation_disposition = OPEN_EXISTING;
     }
-    else if (mode & MZ_STREAM_MODE_CREATE)
+    else if (mode & MZ_OPEN_MODE_CREATE)
     {
         desired_access = GENERIC_WRITE | GENERIC_READ;
         creation_disposition = CREATE_ALWAYS;
@@ -116,13 +116,13 @@ int32_t mz_stream_win32_open(void *stream, const char *path, int32_t mode)
     if (mz_stream_win32_is_open(stream) != MZ_OK)
     {
         win32->error = GetLastError();
-        if (win32->error == ERROR_FILE_NOT_FOUND)
+        if ((win32->error == ERROR_FILE_NOT_FOUND) || (win32->error == ERROR_PATH_NOT_FOUND))
             return MZ_EXIST_ERROR;
         return MZ_STREAM_ERROR;
     }
 
-    if (mode & MZ_STREAM_MODE_APPEND)
-        return mz_stream_win32_seek(stream, 0, MZ_STREAM_SEEK_END);
+    if (mode & MZ_OPEN_MODE_APPEND)
+        return mz_stream_win32_seek(stream, 0, MZ_SEEK_END);
 
     return MZ_OK; 
 }
@@ -220,13 +220,13 @@ int32_t mz_stream_win32_seek(void *stream, int64_t offset, int32_t origin)
 
     switch (origin)
     {
-        case MZ_STREAM_SEEK_CUR:
+        case MZ_SEEK_CUR:
             move_method = FILE_CURRENT;
             break;
-        case MZ_STREAM_SEEK_END:
+        case MZ_SEEK_END:
             move_method = FILE_END;
             break;
-        case MZ_STREAM_SEEK_SET:
+        case MZ_SEEK_SET:
             move_method = FILE_BEGIN;
             break;
         default:

@@ -1,5 +1,5 @@
 /* mz_strm_posix.c -- Stream for filesystem access for posix/linux
-   Version 2.2.0, October 22nd, 2017
+   Version 2.2.1, October 23rd, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -82,11 +82,11 @@ int32_t mz_stream_posix_open(void *stream, const char *path, int32_t mode)
     if (path == NULL)
         return MZ_STREAM_ERROR;
 
-    if ((mode & MZ_STREAM_MODE_READWRITE) == MZ_STREAM_MODE_READ)
+    if ((mode & MZ_OPEN_MODE_READWRITE) == MZ_OPEN_MODE_READ)
         mode_fopen = "rb";
-    else if (mode & MZ_STREAM_MODE_APPEND)
+    else if (mode & MZ_OPEN_MODE_APPEND)
         mode_fopen = "ab";
-    else if (mode & MZ_STREAM_MODE_CREATE)
+    else if (mode & MZ_OPEN_MODE_CREATE)
         mode_fopen = "wb";
     else
         return MZ_STREAM_ERROR;
@@ -154,13 +154,13 @@ int32_t mz_stream_posix_seek(void *stream, int64_t offset, int32_t origin)
 
     switch (origin)
     {
-        case MZ_STREAM_SEEK_CUR:
+        case MZ_SEEK_CUR:
             fseek_origin = SEEK_CUR;
             break;
-        case MZ_STREAM_SEEK_END:
+        case MZ_SEEK_END:
             fseek_origin = SEEK_END;
             break;
-        case MZ_STREAM_SEEK_SET:
+        case MZ_SEEK_SET:
             fseek_origin = SEEK_SET;
             break;
         default:

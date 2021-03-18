@@ -1,5 +1,5 @@
 /* mz_strm.h -- Stream interface
-   Version 2.2.0, October 22nd, 2017
+   Version 2.2.1, October 23rd, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -19,17 +19,6 @@ extern "C" {
 #endif
 
 /***************************************************************************/
-
-#define MZ_STREAM_SEEK_CUR                  (1)
-#define MZ_STREAM_SEEK_END                  (2)
-#define MZ_STREAM_SEEK_SET                  (0)
-
-#define MZ_STREAM_MODE_READ                 (0x01)
-#define MZ_STREAM_MODE_WRITE                (0x02)
-#define MZ_STREAM_MODE_READWRITE            (MZ_STREAM_MODE_READ | MZ_STREAM_MODE_WRITE)
-#define MZ_STREAM_MODE_APPEND               (0x04)
-#define MZ_STREAM_MODE_CREATE               (0x08)
-#define MZ_STREAM_MODE_EXISTING             (0x10)
 
 #define MZ_STREAM_PROP_TOTAL_IN             (1)
 #define MZ_STREAM_PROP_TOTAL_IN_MAX         (2)
