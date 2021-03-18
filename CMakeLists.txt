@@ -5,12 +5,12 @@
 #***************************************************************************
 cmake_minimum_required(VERSION 2.8)
 
-option(USE_ZLIB "Enables building with ZLIB library" ON)
-option(USE_BZIP2 "Enables building with BZIP2 library" ON)
-option(USE_LZMA "Enables building with LZMA library" ON)
-option(USE_CRYPT "Enables building with PKWARE traditional encryption" ON)
-option(USE_AES "Enables building with AES library" ON)
-option(BUILD_TEST "Enables building of minizip executable." OFF)
+option(USE_ZLIB "Enables ZLIB compression" ON)
+option(USE_BZIP2 "Enables BZIP2 compression" ON)
+option(USE_LZMA "Enables LZMA compression" ON)
+option(USE_PKCRYPT "Enables PKWARE traditional encryption" ON)
+option(USE_AES "Enables AES encryption" ON)
+option(BUILD_TEST "Builds minizip test executable" OFF)
 
 # Set a consistent MACOSX_RPATH default across all CMake versions.
 # When CMake 2.8.12 is required, change this default to 1.
@@ -30,7 +30,7 @@ set(INSTALL_MAN_DIR ${CMAKE_INSTALL_MANDIR} CACHE PATH "Installation directory f
 set(INSTALL_PKGCONFIG_DIR ${CMAKE_INSTALL_LIBDIR}/pkgconfig CACHE PATH "Installation directory for pkgconfig (.pc) files")
 set(INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/minizip CACHE PATH "Installation directory for cmake files.")
 
-set(VERSION "2.3.1")
+set(VERSION "2.3.2")
 
 # Set cmake debug postfix to d
 set(CMAKE_DEBUG_POSTFIX "d")
@@ -58,7 +58,6 @@ set(MINIZIP_SRC
     mz_strm_mem.c
     mz_strm_posix.c
     mz_strm_split.c
-    mz_strm_zlib.c
     mz_zip.c)
 
 set(MINIZIP_PUBLIC_HEADERS
@@ -70,7 +69,6 @@ set(MINIZIP_PUBLIC_HEADERS
     mz_strm_mem.h
     mz_strm_posix.h
     mz_strm_split.h
-    mz_strm_zlib.h
     mz_zip.h)
 
 if(WIN32)
@@ -117,11 +115,11 @@ if(UNIX)
     endif()
 endif()
 
-if(USE_CRYPT)
-    add_definitions(-DHAVE_CRYPT)
+if(USE_PKCRYPT)
+    add_definitions(-DHAVE_PKCRYPT)
 
-    list(APPEND MINIZIP_SRC "mz_strm_crypt.c")
-    list(APPEND MINIZIP_PUBLIC_HEADERS "mz_strm_crypt.h")
+    list(APPEND MINIZIP_SRC "mz_strm_pkcrypt.c")
+    list(APPEND MINIZIP_PUBLIC_HEADERS "mz_strm_pkcrypt.h")
 endif()
 
 if(USE_AES)
@@ -156,6 +154,9 @@ endif()
 if(USE_ZLIB)
     add_definitions(-DHAVE_ZLIB)
 
+    list(APPEND MINIZIP_SRC "mz_strm_zlib.c")
+    list(APPEND MINIZIP_PUBLIC_HEADERS "mz_strm_zlib.h")
+
     include(CheckFunctionExists)
     set(CMAKE_REQUIRED_LIBRARIES ZLIB::ZLIB)
     CHECK_FUNCTION_EXISTS(z_get_crc_table
@@ -165,6 +166,7 @@ if(USE_ZLIB)
         add_definitions(-DZ_PREFIX)
     endif()
 endif()
+
 if(USE_BZIP2)
     add_definitions(-DHAVE_BZIP2)
     add_definitions(-DBZ_NO_STDIO)
