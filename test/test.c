@@ -1,5 +1,5 @@
 /* test.c - Test bed area
-   Version 2.8.0, November 24, 2018
+   Version 2.8.1, December 1, 2018
    part of the MiniZip project
 
    Copyright (C) 2018 Nathan Moinvaziri
@@ -436,7 +436,7 @@ int32_t test_stream_find_run(char *name, int32_t count, const uint8_t *find, int
         if (find_cb == mz_stream_find)
             mz_stream_seek(mem_stream, 0, MZ_SEEK_SET);
 
-        err = find_cb(mem_stream, (const void *)find, find_size, i + find_size, &position);
+        err = find_cb(mem_stream, (const void *)find, find_size, (int64_t)i + find_size, &position);
         last_pos = mz_stream_tell(mem_stream);
         mz_stream_mem_delete(&mem_stream);
 
@@ -457,7 +457,7 @@ int32_t test_stream_find_run(char *name, int32_t count, const uint8_t *find, int
         if (find_cb == mz_stream_find)
             mz_stream_seek(mem_stream, 0, MZ_SEEK_SET);
 
-        err = find_cb(mem_stream, (const void *)find, find_size, i + find_size, &position);
+        err = find_cb(mem_stream, (const void *)find, find_size, (int64_t)i + find_size, &position);
         last_pos = mz_stream_tell(mem_stream);
         mz_stream_mem_delete(&mem_stream);
 
@@ -480,7 +480,7 @@ int32_t test_stream_find_run(char *name, int32_t count, const uint8_t *find, int
         if (find_cb == mz_stream_find)
             mz_stream_seek(mem_stream, 0, MZ_SEEK_SET);
 
-        err = find_cb(mem_stream, (const void *)find, find_size, i + find_size + i, &position);
+        err = find_cb(mem_stream, (const void *)find, find_size, (int64_t)i + find_size + i, &position);
         last_pos = mz_stream_tell(mem_stream);
         mz_stream_mem_delete(&mem_stream);
 
@@ -504,7 +504,7 @@ int32_t test_stream_find_run(char *name, int32_t count, const uint8_t *find, int
         if (find_cb == mz_stream_find)
             mz_stream_seek(mem_stream, 0, MZ_SEEK_SET);
 
-        err = find_cb(mem_stream, (const void *)find, find_size, i + find_size + i + 1, &position);
+        err = find_cb(mem_stream, (const void *)find, find_size, (int64_t)i + find_size + i + 1, &position);
         last_pos = mz_stream_tell(mem_stream);
         mz_stream_mem_delete(&mem_stream);
 

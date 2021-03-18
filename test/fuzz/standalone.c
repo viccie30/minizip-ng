@@ -1,5 +1,5 @@
 /* standalone.c - Standalone fuzzer tester
-   Version 2.8.0, November 24, 2018
+   Version 2.8.1, December 1, 2018
    part of the MiniZip project
 
    Copyright (C) 2018 sebpop
@@ -68,6 +68,7 @@ int main(int argc, char **argv)
                 buf_length = (int32_t)file_size;
             mz_stream_os_seek(stream, 0, MZ_SEEK_SET);
 
+            buf = NULL;
             if (buf_length > 0)
                 buf = MZ_ALLOC(buf_length);
 
