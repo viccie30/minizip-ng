@@ -1,5 +1,5 @@
 /* mz_os.h -- System functions
-   Version 2.3.3, June 10, 2018
+   Version 2.3.4, June 19, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -52,6 +52,9 @@ int32_t mz_make_dir(const char *path);
 
 int32_t mz_path_combine(char *path, const char *join, int32_t max_path);
 // Combines two paths
+
+int32_t mz_path_resolve(const char *path, char *target, int32_t max_target);
+// Resolves path
 
 int32_t mz_path_remove_filename(const char *path);
 // Remove the filename from a path
