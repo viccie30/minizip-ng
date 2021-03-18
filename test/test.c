@@ -1,5 +1,5 @@
 /* test.c - Test bed area
-   Version 2.8.6, April 8, 2019
+   Version 2.8.7, May 9, 2019
    part of the MiniZip project
 
    Copyright (C) 2018-2019 Nathan Moinvaziri
@@ -606,7 +606,7 @@ void test_crypt_aes(void)
     key_length = strlen(key);
     test_length = strlen(test);
 
-    strncpy((char *)buf, test, test_length);
+    strncpy((char *)buf, test, sizeof(buf));
 
     printf("Aes input hex\n");
     for (i = 0; i < test_length; i += 1)

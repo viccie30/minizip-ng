@@ -1,5 +1,5 @@
 /* mz_crypt_apple.c -- Crypto/hash functions for Apple
-   Version 2.8.6, April 8, 2019
+   Version 2.8.7, May 9, 2019
    part of the MiniZip project
 
    Copyright (C) 2010-2019 Nathan Moinvaziri
@@ -16,7 +16,6 @@
 #include <CommonCrypto/CommonCryptor.h>
 #include <CommonCrypto/CommonDigest.h>
 #include <CommonCrypto/CommonHMAC.h>
-#include <CommonCrypto/CommonRandom.h>
 #include <Security/Security.h>
 #include <Security/SecPolicy.h>
 
@@ -24,7 +23,7 @@
 
 int32_t mz_crypt_rand(uint8_t *buf, int32_t size)
 {
-    if (CCRandomGenerateBytes(buf, size) != kCCSuccess)
+    if (SecRandomCopyBytes(kSecRandomDefault, size, buf) != errSecSuccess)
         return 0;
     return size;
 }
@@ -405,6 +404,7 @@ void mz_crypt_hmac_delete(void **handle)
 
 /***************************************************************************/
 
+#if !defined(MZ_ZIP_NO_SIGNING)
 int32_t mz_crypt_sign(uint8_t *message, int32_t message_size, uint8_t *cert_data, int32_t cert_data_size, 
     const char *cert_pwd, uint8_t **signature, int32_t *signature_size)
 {
@@ -526,3 +526,5 @@ int32_t mz_crypt_sign_verify(uint8_t *message, int32_t message_size, uint8_t *si
     
     return err;
 }
+
+#endif
