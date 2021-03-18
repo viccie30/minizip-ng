@@ -1,5 +1,5 @@
 /* mz_strm_mem.c -- Stream for memory access
-   Version 2.7.3, November 4, 2018
+   Version 2.7.4, November 6, 2018
    part of the MiniZip project
 
    This interface is designed to access memory rather than files.
@@ -183,6 +183,10 @@ int32_t mz_stream_mem_seek(void *stream, int64_t offset, int32_t origin)
             return MZ_SEEK_ERROR;
 
         mz_stream_mem_set_size(stream, (int32_t)new_pos);
+    }
+    else if (new_pos < 0)
+    {
+        return MZ_SEEK_ERROR;
     }
 
     mem->position = (int32_t)new_pos;

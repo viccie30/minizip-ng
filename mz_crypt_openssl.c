@@ -1,5 +1,5 @@
 /* mz_crypt_openssl.c -- Crypto/hash functions for OpenSSL
-   Version 2.7.3, November 4, 2018
+   Version 2.7.4, November 6, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -23,9 +23,6 @@
 #include <openssl/x509.h>
 
 #include "mz.h"
-
-#include "mz_os.h"
-#include "mz_strm_os.h"
 
 /***************************************************************************/
 

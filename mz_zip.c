@@ -1,5 +1,5 @@
 /* zip.c -- Zip manipulation
-   Version 2.7.3, November 4, 2018
+   Version 2.7.4, November 6, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -217,6 +217,7 @@ static int32_t mz_zip_read_cd(void *handle)
     uint32_t value32 = 0;
     uint64_t value64 = 0;
     uint16_t comment_size = 0;
+    int32_t comment_read = 0;
     int32_t err = MZ_OK;
 
 
@@ -267,9 +268,11 @@ static int32_t mz_zip_read_cd(void *handle)
             zip->comment = (char *)MZ_ALLOC(comment_size + 1);
             if (zip->comment != NULL)
             {
-                if (mz_stream_read(zip->stream, zip->comment, comment_size) != comment_size)
-                    err = MZ_READ_ERROR;
-                zip->comment[comment_size] = 0;
+                comment_read = mz_stream_read(zip->stream, zip->comment, comment_size);
+                // Don't fail if incorrect comment length read, not critical
+                if (comment_read < 0)
+                    comment_read = 0;
+                zip->comment[comment_read] = 0;
             }
         }
 
@@ -324,12 +327,6 @@ static int32_t mz_zip_read_cd(void *handle)
 
     if (err == MZ_OK)
     {
-        if (eocd_pos < zip->cd_offset + zip->cd_size)
-            err = MZ_FORMAT_ERROR;
-    }
-
-    if (err == MZ_OK)
-    {
         // Verify central directory signature exists at offset
         err = mz_stream_seek(zip->stream, zip->cd_offset, MZ_SEEK_SET);
         if (err == MZ_OK)
@@ -345,9 +342,16 @@ static int32_t mz_zip_read_cd(void *handle)
                 // If found compensate for incorrect locations
                 value64i = zip->cd_offset;
                 zip->cd_offset = eocd_pos - zip->cd_size;
+                // Assume disk has prepended data
                 zip->disk_offset_shift = zip->cd_offset - value64i;
             }
         }
+    }
+    
+    if (err == MZ_OK)
+    {
+        if (eocd_pos < zip->cd_offset + zip->cd_size)
+            err = MZ_FORMAT_ERROR;
     }
 
     return err;
@@ -711,7 +715,7 @@ static int32_t mz_zip_entry_read_header(void *stream, uint8_t local, mz_zip_file
     uint32_t reserved = 0;
     uint32_t magic = 0;
     uint32_t dos_date = 0;
-    uint32_t extra_pos = 0;
+    uint32_t field_pos = 0;
     uint16_t field_type = 0;
     uint16_t field_length = 0;
     uint32_t field_length_read = 0;
@@ -719,8 +723,8 @@ static int32_t mz_zip_entry_read_header(void *stream, uint8_t local, mz_zip_file
     uint16_t ntfs_attrib_size = 0;
     uint16_t value16 = 0;
     uint32_t value32 = 0;
-    int64_t max_seek = 0;
-    int64_t seek = 0;
+    int64_t extrafield_pos = -1;
+    int64_t comment_pos = -1;
     int32_t err = MZ_OK;
 
 
@@ -790,40 +794,53 @@ static int32_t mz_zip_entry_read_header(void *stream, uint8_t local, mz_zip_file
         }
     }
 
-    max_seek = (int64_t)file_info->filename_size + file_info->extrafield_size + file_info->comment_size + 3;
     if (err == MZ_OK)
-        err = mz_stream_seek(file_extra_stream, max_seek, MZ_SEEK_SET);
-    if (err == MZ_OK)
-        err = mz_stream_seek(file_extra_stream, 0, MZ_SEEK_SET);
+        err = mz_stream_seek(file_extra_stream, 0, SEEK_SET);
 
+    // Copy variable length data to memory stream for later retrieval
     if ((err == MZ_OK) && (file_info->filename_size > 0))
-    {
-        mz_stream_mem_get_buffer(file_extra_stream, (const void **)&file_info->filename);
-
         err = mz_stream_copy(file_extra_stream, stream, file_info->filename_size);
-        if (err == MZ_OK)
-            err = mz_stream_write_uint8(file_extra_stream, 0);
+    if (err == MZ_OK)
+        err = mz_stream_write_uint8(file_extra_stream, 0);
+    extrafield_pos = (int64_t)file_info->filename_size + 1;
 
-        seek += (int64_t)file_info->filename_size + 1;
-    }
+    if ((err == MZ_OK) && (file_info->extrafield_size > 0))
+        err = mz_stream_copy(file_extra_stream, stream, file_info->extrafield_size);
+    if (err == MZ_OK)
+        err = mz_stream_write_uint8(file_extra_stream, 0);
+
+    comment_pos = extrafield_pos + (int64_t)file_info->extrafield_size + 1;
+    if ((err == MZ_OK) && (file_info->comment_size > 0))
+        err = mz_stream_copy(file_extra_stream, stream, file_info->comment_size);
+    if (err == MZ_OK)
+        err = mz_stream_write_uint8(file_extra_stream, 0);
+
+    // Get pointers to variable length data
+    mz_stream_mem_get_buffer(file_extra_stream, (const void **)&file_info->filename);
+    if (extrafield_pos >= 0)
+        mz_stream_mem_get_buffer_at(file_extra_stream, extrafield_pos, (const void **)&file_info->extrafield);
+    if (comment_pos >= 0)
+        mz_stream_mem_get_buffer_at(file_extra_stream, comment_pos, (const void **)&file_info->comment);
+
+    // Set to empty string just in-case
+    if (file_info->filename == NULL)
+        file_info->filename = "";
+    if (file_info->comment == NULL)
+        file_info->comment = "";
 
     if ((err == MZ_OK) && (file_info->extrafield_size > 0))
     {
-        mz_stream_mem_get_buffer_at(file_extra_stream, seek, (const void **)&file_info->extrafield);
+        // Seek to and parse the extra field
+        err = mz_stream_seek(file_extra_stream, extrafield_pos, MZ_SEEK_SET);
 
-        err = mz_stream_copy(file_extra_stream, stream, file_info->extrafield_size);
-        if (err == MZ_OK)
-            err = mz_stream_write_uint8(file_extra_stream, 0);
-
-        // Seek back and parse the extra field
-        if (err == MZ_OK)
-            err = mz_stream_seek(file_extra_stream, seek, MZ_SEEK_SET);
-
-        seek += (int64_t)file_info->extrafield_size + 1;
-
-        while ((err == MZ_OK) && (extra_pos < file_info->extrafield_size))
+        while ((err == MZ_OK) && (field_pos < file_info->extrafield_size))
         {
             err = mz_zip_extrafield_read(file_extra_stream, &field_type, &field_length);
+
+            // Don't allow field length to exceed size of remaining extrafield
+            if (field_length > (file_info->extrafield_size - field_pos - 4))
+                field_length = (file_info->extrafield_size - field_pos - 4);
+
             // Read ZIP64 extra field
             if (field_type == MZ_ZIP_EXTENSION_ZIP64)
             {
@@ -934,17 +951,8 @@ static int32_t mz_zip_entry_read_header(void *stream, uint8_t local, mz_zip_file
                 err = mz_stream_seek(file_extra_stream, field_length, MZ_SEEK_CUR);
             }
 
-            extra_pos += 4 + field_length;
+            field_pos += 4 + field_length;
         }
-    }
-
-    if ((err == MZ_OK) && (file_info->comment_size > 0))
-    {
-        mz_stream_mem_get_buffer_at(file_extra_stream, seek, (const void **)&file_info->comment);
-
-        err = mz_stream_copy(file_extra_stream, stream, file_info->comment_size);
-        if (err == MZ_OK)
-            err = mz_stream_write_uint8(file_extra_stream, 0);
     }
 
     return err;
@@ -1479,6 +1487,7 @@ int32_t mz_zip_entry_read_open(void *handle, uint8_t raw, const char *password)
 {
     mz_zip *zip = (mz_zip *)handle;
     int32_t err = MZ_OK;
+    int32_t err_shift = MZ_OK;
 
 #if defined(MZ_ZIP_NO_ENCRYPTION)
     if (password != NULL)
@@ -1501,6 +1510,19 @@ int32_t mz_zip_entry_read_open(void *handle, uint8_t raw, const char *password)
     err = mz_stream_seek(zip->stream, zip->file_info.disk_offset + zip->disk_offset_shift, MZ_SEEK_SET);
     if (err == MZ_OK)
         err = mz_zip_entry_read_header(zip->stream, 1, &zip->local_file_info, zip->local_file_info_stream);
+
+    if (err == MZ_FORMAT_ERROR && zip->disk_offset_shift > 0)
+    {
+        // Perhaps we didn't compensated correctly for incorrect cd offset
+        err_shift = mz_stream_seek(zip->stream, zip->file_info.disk_offset, MZ_SEEK_SET);
+        if (err_shift == MZ_OK)
+            err_shift = mz_zip_entry_read_header(zip->stream, 1, &zip->local_file_info, zip->local_file_info_stream);
+        if (err_shift == MZ_OK)
+        {
+            zip->disk_offset_shift = 0;
+            err = err_shift;
+        }
+    }
 
 #ifdef MZ_ZIP_NO_DECOMPRESSION
     if (zip->file_info.compression_method != MZ_COMPRESS_METHOD_STORE)

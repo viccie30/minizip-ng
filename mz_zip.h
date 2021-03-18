@@ -1,5 +1,5 @@
 /* mz_zip.h -- Zip manipulation
-   Version 2.7.3, November 4, 2018
+   Version 2.7.4, November 6, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -186,7 +186,7 @@ int32_t mz_zip_extrafield_find(void *stream, uint16_t type, uint16_t *length);
 // Seeks to extra field by its type and returns its length
 
 int32_t mz_zip_extrafield_read(void *stream, uint16_t *type, uint16_t *length);
-// Reads and extrafield header from a stream
+// Reads an extrafield header from a stream
 
 int32_t mz_zip_extrafield_write(void *stream, uint32_t type, uint16_t length);
 // Writes an extrafield header to a stream

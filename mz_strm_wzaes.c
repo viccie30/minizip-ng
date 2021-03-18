@@ -1,5 +1,5 @@
 /* mz_strm_wzaes.c -- Stream for WinZip AES encryption
-   Version 2.7.3, November 4, 2018
+   Version 2.7.4, November 6, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -16,7 +16,6 @@
 
 #include "mz.h"
 #include "mz_crypt.h"
-#include "mz_os.h"
 #include "mz_strm.h"
 #include "mz_strm_wzaes.h"
 
