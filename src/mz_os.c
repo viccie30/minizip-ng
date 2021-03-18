@@ -1,5 +1,5 @@
 /* mz_os.c -- System functions
-   Version 2.2.2, October 26th, 2017
+   Version 2.2.3, October 27th, 2017
    part of the MiniZip project
 
    Copyright (C) 2012-2017 Nathan Moinvaziri
@@ -97,9 +97,9 @@ int32_t mz_get_file_crc(const char *path, uint32_t *result_crc)
 {
     void *stream = NULL;
     void *crc32_stream = NULL;
-    uint32_t read = 0;
-    uint8_t buf[INT16_MAX];
+    int32_t read = 0;
     int32_t err = MZ_OK;
+    uint8_t buf[INT16_MAX];
 
     mz_stream_os_create(&stream);
 

@@ -1,4 +1,4 @@
-# Minizip 2.2.2
+# Minizip 2.2.3
 
 This library is a refactoring of the minizip contribution found in the zlib distribution that is supported on Windows, macOS, and Linux. The motivation for this work has been the inclusion of advanced features, improvements in code maintainability and readability, and the reduction of duplicate code. It is based on the original work of [Gilles Vollant](http://www.winimage.com/zLibDll/minizip.html) that has been contributed to by many people over the years.
 
@@ -24,7 +24,7 @@ cmake --build .
 | minizip.c | Sample application | No |
 | mz_compat.\* | Minizip 1.0 compatibility layer | No |
 | mz.h | Error codes and flags | Yes |
-| mz_os\* | OS specific helper functions | Encryption |
+| mz_os\* | OS specific helper functions | Encryption, Disk Splitting |
 | mz_strm.\* | Stream interface | Yes |
 | mz_strm_aes.\* | WinZIP AES stream | No |
 | mz_strm_buf.\* | Buffered stream | No |
@@ -90,9 +90,9 @@ void *mem_stream = NULL;
 // fill zip_buffer with zip contents
 mz_stream_mem_create(&mem_stream);
 mz_stream_mem_set_buffer(mem_stream, zip_buffer, zip_buffer_size);
-mz_stream_open(mem_stream, NULL, MZ_STREAM_MODE_READ);
+mz_stream_open(mem_stream, NULL, MZ_OPEN_MODE_READ);
 
-void *zip_handle = mz_zip_open(mem_stream, MZ_STREAM_MODE_READ);
+void *zip_handle = mz_zip_open(mem_stream, MZ_OPEN_MODE_READ);
 // do unzip operations
 
 mz_stream_mem_delete(&mem_stream);
@@ -112,6 +112,9 @@ void *zip_handle = mz_zip_open(mem_stream, MZ_OPEN_MODE_WRITE);
 
 mz_stream_mem_delete(&mem_stream);
 ```
+
+For a complete example, see test_zip_mem() in [test.c](https://github.com/nmoinvaz/minizip/blob/master/test/test.c).
+
 #### Buffered Streaming
 
 By default the library will read bytes typically one at a time. The buffered stream allows for buffered read and write operations to improve I/O performance.
