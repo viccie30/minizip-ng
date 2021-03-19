@@ -8,6 +8,7 @@ Build-Depends: cmake,
                libssl-dev,
                libz-dev,
                libzstd-dev,
+               pandoc <!nodoc>,
                pkg-config
 Standards-Version: 4.5.1
 Section: libs
@@ -33,10 +34,10 @@ Architecture: any
 Multi-Arch: same
 Depends: libbz2-dev,
          liblzma-dev,
+         libminizip-ng3.0 (= ${binary:Version}),
          libssl-dev,
          libz-dev,
          libzstd-dev,
-         libminizip-ng3.0 (= ${binary:Version}),
          ${misc:Depends}
 Conflicts: libminizip-dev
 Replaces: libminizip-dev

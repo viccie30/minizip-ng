@@ -49,3 +49,22 @@ override_dh_auto_install:
 override_dh_installdocs:
 	dh_installdocs -plibminizip-ng-dev --link-doc=libminizip-ng3.0
 	dh_installdocs --remaining-packages
+ifeq ($(filter nodoc,$(DEB_BUILD_PROFILES)),)
+	mkdir -p debian/libminizip-ng-dev/usr/share/doc/libminizip-ng3.0/zip
+	set -e; \
+	cd doc; \
+	cp -a --reflink=auto --parents $$(find -name '*.txt') \
+		../debian/libminizip-ng-dev/usr/share/doc/libminizip-ng3.0; \
+	for doc in $$(find -name '*.md'); do \
+		iconv -f cp1252 -t utf-8 $$doc | \
+			pandoc --standalone -f gfm \
+				--metadata title=$$(echo $$doc | sed -E 's#./(.*)\.md#\1#') \
+				-o ../debian/libminizip-ng-dev/usr/share/doc/libminizip-ng3.0/$${doc%.md}.html; \
+		sed -Ei 's/href="([^"]+)\.md"/href="\1.html"/g' \
+			../debian/libminizip-ng-dev/usr/share/doc/libminizip-ng3.0/$${doc%.md}.html; \
+	done
+endif
+
+override_dh_compress:
+	# This file is linked to from the html documentation
+	dh_compress -X zip/appnote.txt
