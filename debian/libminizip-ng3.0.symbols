@@ -5,7 +5,7 @@ libminizip.so.3.0 libminizip-ng3.0 #MINVER#
  fill_memory_filefunc@Base 3.0.1
  fill_win32_filefunc64@Base 3.0.1
  fill_win32_filefunc64A@Base 3.0.1
- fill_win32_filefunc64W@Base 3.0.1
+ (optional=windows-only symbol)fill_win32_filefunc64W@Base 3.0.1
  fill_win32_filefunc@Base 3.0.1
  mz_crypt_aes_create@Base 3.0.1
  mz_crypt_aes_decrypt@Base 3.0.1

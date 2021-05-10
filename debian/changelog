@@ -1,3 +1,12 @@
+minizip-ng (3.0.2-1) testing; urgency=medium
+
+  [ Nathan Moinvaziri ]
+  * Add support for ioapi in compatibility layer.
+  * Remove fill_win32_filefunc64W so nobody tries to pass in widechar 
+    to zipOpen or unzOpen.
+
+ -- Victor Westerhuis <victor@westerhu.is>  Mon, 10 May 2021 17:04:42 +0200
+
 minizip-ng (3.0.1-1) testing; urgency=medium
 
   * Initial release
